@@ -1,0 +1,4 @@
+include ':app'
+
+include ':insight_library'
+project(':insight_library').projectDir = new File(settingsDir, "../insight_library/app");

@@ -1,0 +1,37 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <color name="colorPrimary">#3F51B5</color>
+    <color name="colorPrimaryDark">#303F9F</color>
+    <color name="colorAccent">#FF4081</color>
+    <color name="card">#61A5A6</color>
+
+    <color name="main">#009ADA</color>
+    <color name="main_dark">#0075A6</color>
+    <color name="normal">#757575</color>
+    <color name="accent">#61A5A6</color>
+    <color name="menu">#012946</color>
+    <color name="background">#F2F2F2</color>
+    <color name="action">#3174AC</color>
+    <color name="highlight">#212121</color>
+    <color name="inactive">#BDBDBD</color>
+    <color name="white">#FFFFFF</color>
+    <color name="black_semi_transparent">#B2000000</color>
+    <color name="half_black">#808080</color>
+    <color name="inactive_light">#DFE0DF</color>
+    <color name="background_dark">#EAEAEA</color>
+    <color name="normal_dark">#565A5C</color>
+    <color name="normal_light">#959595</color>
+    <color name="white_pressed">#f1f1f1</color>
+    <color name="pink">#e91e63</color>
+    <color name="pink_pressed">#ec407a</color>
+    <color name="blue_semi_transparent">#805677fc</color>
+    <color name="blue_semi_transparent_pressed">#80738ffe</color>
+    <color name="shadow">#55000000</color>
+
+    <array name="progress_colors_light">
+        <item>#FF03A9F4</item>
+        <item>#FFD8433C</item>
+        <item>#FFF2AF3A</item>
+        <item>#FF279B5E</item>
+    </array>
+</resources>

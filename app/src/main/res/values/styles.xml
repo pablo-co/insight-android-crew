@@ -1,0 +1,68 @@
+<resources>
+
+    <!-- Base application theme. -->
+    <style name="AppTheme" parent="Theme.AppCompat.Light.DarkActionBar">
+        <!-- Customize your theme here. -->
+        <item name="colorPrimary">@color/colorPrimary</item>
+        <item name="colorPrimaryDark">@color/colorPrimaryDark</item>
+        <item name="colorAccent">@color/colorAccent</item>
+        <item name="android:windowIsTranslucent">true</item>
+        <item name="android:windowBackground">@android:color/transparent</item>
+    </style>
+    <style name="AppTheme.NoActionBar">
+        <item name="windowActionBar">false</item>
+        <item name="windowNoTitle">true</item>
+    </style>
+    <style name="AppTheme.AppBarOverlay" parent="ThemeOverlay.AppCompat.Dark.ActionBar"/>
+    <style name="AppTheme.PopupOverlay" parent="ThemeOverlay.AppCompat.Light"/>
+
+    <style name="dividedListStyle" parent="@android:style/Widget.ListView">
+        <item name="android:cacheColorHint">@android:color/transparent</item>
+        <item name="android:divider">@drawable/item_divider</item>
+        <item name="android:dividerHeight">1dp</item>
+    </style>
+
+    <style name="LightCircularProgressDrawable" parent="Material.Drawable.CircularProgress">
+        <item name="cpd_strokeColor">@color/colorPrimary</item>
+    </style>
+
+    <style name="LightCircularProgressView">
+        <item name="pv_autostart">true</item>
+        <item name="pv_circular">true</item>
+        <item name="pv_progressStyle">@style/LightCircularProgressDrawable</item>
+        <item name="pv_progressMode">indeterminate</item>
+    </style>
+
+    <style name="LightInColorCircularProgressView" parent="LightCircularProgressView">
+        <item name="pv_progressStyle">@style/LightInColorCircularProgressDrawable</item>
+    </style>
+
+    <style name="LightInCircularProgressDrawable" parent="Material.Drawable.CircularProgress">
+        <item name="cpd_strokeColor">@color/colorPrimary</item>
+        <item name="cpd_inAnimDuration">800</item>
+        <item name="cpd_inStepPercent">0.5</item>
+        <item name="cpd_inStepColors">@array/progress_colors_light</item>
+        <item name="cpd_outAnimDuration">400</item>
+    </style>
+
+    <style name="LightInColorCircularProgressDrawable" parent="LightInCircularProgressDrawable">
+        <item name="cpd_strokeColors">@array/progress_colors_light</item>
+    </style>
+
+
+    <style  name="LightEditText"  parent="Material.Widget.EditText.Light">
+        <item name="android:textAppearance">@style/Base.TextAppearance.AppCompat.Body1</item>
+        <item name="android:textColor">@color/normal</item>
+        <item name="android:textColorHint">@color/inactive</item>
+        <item name="android:textSize">16sp</item>
+        <item name="et_labelPadding">4dp</item>
+        <item name="et_labelTextSize">12sp</item>
+        <item name="et_dividerPadding">2dp</item>
+        <item name="et_dividerColor">@color/inactive</item>
+        <item name="et_labelTextColor">@color/normal</item>
+        <item name="et_supportTextErrorColor">#FFFF0000</item>
+        <item name="et_dividerErrorColor">#FFFF0000</item>
+        <item name="et_supportMode">helper</item>
+    </style>
+
+</resources>

@@ -1,0 +1,70 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:pp="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:orientation="vertical"
+    android:padding="16dp">
+
+    <com.rey.material.widget.Spinner
+        android:id="@+id/delivery_typeSpinner"
+        style="@style/Material.Widget.Spinner"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="32dp"/>
+
+    <com.rey.material.widget.Spinner
+        android:id="@+id/delivery_packageTypeSpinner"
+        style="@style/Material.Widget.Spinner"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="32dp"/>
+
+    <com.rey.material.widget.Slider
+        style="@style/Material.Widget.Slider.Discrete"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_gravity="center_horizontal"
+        android:layout_marginTop="32dp"
+        app:sl_maxValue="100"
+        app:sl_primaryColor="@color/colorPrimary"
+        app:sl_value="10"
+        pp:sl_minValue="0"/>
+
+    <com.rey.material.widget.TextView
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="# of products / packages"/>
+
+    <com.rey.material.widget.CheckBox
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="32dp"
+        android:text="Equipment used?"
+        android:textSize="18dp"
+        android:gravity="center"/>
+
+    <com.rey.material.widget.CheckBox
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="32dp"
+        android:text="Walked beyond segment?"
+        android:textSize="18dp"
+        android:gravity="center"/>
+
+
+    <com.dd.CircularProgressButton
+        android:id="@+id/actionButton"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginBottom="12dp"
+        android:layout_marginTop="32dp"
+        android:text="@string/action_next"
+        android:textColor="@color/white"
+        app:cpb_cornerRadius="2dp"
+        app:cpb_textIdle="@string/action_next"/>
+
+
+</LinearLayout>
