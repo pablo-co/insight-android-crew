@@ -71,6 +71,9 @@ public class LoginFragment extends FragmentResponder {
     @Inject
     protected APIFetch mAPIFetch;
 
+    @Inject
+    protected Lab mLab;
+
     @Bind(R.id.email_sign_in_button)
     protected CircularProgressButton mLoginButton;
 
@@ -174,7 +177,7 @@ public class LoginFragment extends FragmentResponder {
     }
 
     protected void loginSuccess(User user) {
-        if (Lab.get(getActivity()).setUser(user).saveUser()) {
+        if (mLab.setUser(user).saveUser()) {
             sendResult(TargetListener.RESULT_OK, user);
         } else {
             ErrorHandler.handleError(getActivity().getSupportFragmentManager(), -1, "Error");

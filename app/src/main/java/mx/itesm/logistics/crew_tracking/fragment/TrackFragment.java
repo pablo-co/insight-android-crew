@@ -28,66 +28,48 @@ package mx.itesm.logistics.crew_tracking.fragment;
 import android.app.Activity;
 import android.content.Intent;
 import android.os.Bundle;
-import android.os.CountDownTimer;
-import android.support.v4.app.Fragment;
-import android.util.Log;
+import android.support.design.widget.FloatingActionButton;
 import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.MenuInflater;
 import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
-import android.view.animation.AccelerateInterpolator;
-import android.view.animation.AlphaAnimation;
-import android.view.animation.Animation;
-import android.view.animation.DecelerateInterpolator;
-import android.widget.FrameLayout;
-import android.widget.TableLayout;
 
 import com.loopj.android.http.RequestParams;
-import com.rey.material.widget.Button;
 import com.rey.material.widget.TextView;
-import com.squareup.otto.Bus;
 import com.squareup.otto.Subscribe;
-
-import org.apache.http.Header;
-import org.json.JSONObject;
-
-import java.math.BigDecimal;
-import java.math.RoundingMode;
 
 import javax.inject.Inject;
 
 import butterknife.Bind;
 import butterknife.ButterKnife;
 import butterknife.OnClick;
-import edu.mit.lastmite.insight_library.fragment.FragmentResponder;
-import edu.mit.lastmite.insight_library.fragment.InsightMapsFragment;
-import edu.mit.lastmite.insight_library.http.APIFetch;
-import edu.mit.lastmite.insight_library.http.APIResponseHandler;
-import edu.mit.lastmite.insight_library.model.CStop;
 import edu.mit.lastmite.insight_library.model.Location;
 import edu.mit.lastmite.insight_library.model.Route;
 import edu.mit.lastmite.insight_library.model.User;
 import edu.mit.lastmite.insight_library.model.Vehicle;
+import edu.mit.lastmite.insight_library.model.Visit;
 import edu.mit.lastmite.insight_library.util.ApplicationComponent;
-import edu.mit.lastmite.insight_library.util.Helper;
 import mx.itesm.logistics.crew_tracking.R;
+import mx.itesm.logistics.crew_tracking.activity.CStopListActivity;
 import mx.itesm.logistics.crew_tracking.activity.ShopListActivity;
 import mx.itesm.logistics.crew_tracking.activity.VehicleListActivity;
+import mx.itesm.logistics.crew_tracking.model.CStop;
+import mx.itesm.logistics.crew_tracking.queue.CrewNetworkTaskQueueWrapper;
 import mx.itesm.logistics.crew_tracking.service.LocationManagerService;
+import mx.itesm.logistics.crew_tracking.task.CreateCStopTask;
+import mx.itesm.logistics.crew_tracking.task.CreateVisitTask;
+import mx.itesm.logistics.crew_tracking.task.StopCStopTask;
+import mx.itesm.logistics.crew_tracking.task.StopVisitTask;
 import mx.itesm.logistics.crew_tracking.util.CrewAppComponent;
 import mx.itesm.logistics.crew_tracking.util.Lab;
 
-public class TrackFragment extends FragmentResponder {
-
+public class TrackFragment extends edu.mit.lastmite.insight_library.fragment.TrackFragment {
     public static final int REQUEST_VEHICLE = 0;
     public static final int REQUEST_SHOP = 1;
 
-    protected static final int TIMER_LENGTH = 1000;
-    protected static final float OVERLAY_OPACITY = 0.35f;
-
-    public enum State {
+    public enum TrackState implements State {
         IDLE,
         WAITING_LOCATION,
         DELIVERING,
@@ -95,58 +77,28 @@ public class TrackFragment extends FragmentResponder {
     }
 
     @Inject
-    protected Bus mBus;
+    protected Lab mLab;
 
     @Inject
-    protected APIFetch mAPIFetch;
-
-    protected CountDownTimer mCountDownTimer;
-    protected int times = 0;
-    protected float mAcumDistance = 0.0f;
-
-    protected State mState = State.IDLE;
-    protected Location mLastLocation;
-    protected BigDecimal mAcumSpeed = new BigDecimal(0);
-    protected BigDecimal mSpeedCount = new BigDecimal(0);
+    protected CrewNetworkTaskQueueWrapper mNetworkTaskQueueWrapper;
 
     protected User mUser;
     protected Vehicle mVehicle;
     protected Route mRoute;
     protected CStop mStop;
+    protected Visit mVisit;
 
+    @Bind(R.id.track_deliveringButton)
+    protected FloatingActionButton mDeliveringButton;
 
-    @Bind(R.id.track_startButton)
-    protected Button mStartButton;
+    @Bind(R.id.track_deliveredButton)
+    protected FloatingActionButton mDeliveredButton;
 
-    @Bind(R.id.track_timeTextView)
-    protected TextView mTimeTextView;
-
-    @Bind(R.id.track_overlayLayout)
-    protected FrameLayout mOverlayLayout;
-
-    @Bind(R.id.track_stateTextView)
-    protected TextView mStateTextView;
-
-    @Bind(R.id.track_actionButton)
-    protected Button mActionButton;
-
-    @Bind(R.id.track_distanceTextView)
-    protected TextView mDistanceTextView;
-
-    @Bind(R.id.track_speedTextView)
-    protected TextView mSpeedTextView;
-
-    @Bind(R.id.track_statsLayout)
-    protected TableLayout mStatsLayout;
-
-    @Bind(R.id.track_averageSpeedTextView)
-    protected TextView mAverageSpeedTextView;
+    @Bind(R.id.track_stopButton)
+    protected FloatingActionButton mStopButton;
 
     @Bind(R.id.track_vehicleTextView)
     protected TextView mVehicleTextView;
-
-    @Bind(R.id.track_waitingLocationTextView)
-    protected TextView mWaitingLocationTextView;
 
     @Override
     public void injectFragment(ApplicationComponent component) {
@@ -159,13 +111,11 @@ public class TrackFragment extends FragmentResponder {
         setRetainInstance(true);
         setHasOptionsMenu(true);
 
-        mUser = Lab.get(getContext()).getUser();
-        mVehicle = Lab.get(getContext()).getVehicle();
+        mUser = mLab.getUser();
+        mVehicle = mLab.getVehicle();
+        mState = TrackState.IDLE;
 
-        resetStop();
         resetRoute();
-
-        mBus.register(this);
     }
 
     @Override
@@ -173,18 +123,12 @@ public class TrackFragment extends FragmentResponder {
         View view = inflater.inflate(R.layout.fragment_track, container, false);
         ButterKnife.bind(this, view);
 
-        mOverlayLayout.setAlpha(OVERLAY_OPACITY);
+        findTrackViews(view);
         startIdle();
         updateVehicleView();
+        inflateMapsFragment(R.id.track_mapLayout);
 
-        Helper.get(getContext()).inflateFragment(getChildFragmentManager(), R.id.track_mapLayout, new Helper.FragmentCreator() {
-            @Override
-            public Fragment createFragment() {
-                return InsightMapsFragment.newInstance(InsightMapsFragment.Flags.DRAW_MARKER |
-                        InsightMapsFragment.Flags.DRAW_PATH |
-                        InsightMapsFragment.Flags.ROTATE_WITH_DEVICE);
-            }
-        }, R.animator.no_animation, R.animator.no_animation);
+        mOverlayLayout.setAlpha(OVERLAY_OPACITY);
 
         return view;
     }
@@ -198,16 +142,16 @@ public class TrackFragment extends FragmentResponder {
     @Override
     public boolean onOptionsItemSelected(MenuItem menuItem) {
         switch (menuItem.getItemId()) {
-            case R.id.track_menu_item_stop:
-                startIdle();
-                return true;
             case R.id.track_menu_item_logout:
+                return true;
+            case R.id.track_menu_item_sync:
+                Intent intent = new Intent(getContext(), CStopListActivity.class);
+                startActivity(intent);
                 return true;
             default:
                 return super.onOptionsItemSelected(menuItem);
         }
     }
-
 
     @Override
     public void onActivityResult(int requestCode, int resultCode, Intent data) {
@@ -218,40 +162,50 @@ public class TrackFragment extends FragmentResponder {
             case REQUEST_VEHICLE:
                 mVehicle = (Vehicle) data.getSerializableExtra(VehicleListActivity.EXTRA_VEHICLE);
                 sendAssignVehicle(mVehicle, mUser);
-                Lab.get(getContext()).setVehicle(mVehicle).saveVehicle();
+                mLab.setVehicle(mVehicle).saveVehicle();
                 updateVehicleView();
                 break;
             case REQUEST_SHOP:
-                sendStopTracking();
                 resetStats();
-                startWaitingLocation();
+                startMenu();
                 break;
         }
     }
 
-
+    @SuppressWarnings("UnusedDeclaration")
     @OnClick(R.id.track_startButton)
     protected void onStartClicked() {
         if (mLastLocation != null) {
-            startDelivering();
+            startMenu();
         } else {
             startWaitingLocation();
         }
     }
 
-    @OnClick(R.id.track_actionButton)
-    protected void onActionClicked() {
-        switch (mState) {
-            case DELIVERING:
-                sendStartTracking();
-                startTracking();
-                break;
-            case TRACKING:
-                Intent intent = new Intent(getContext(), ShopListActivity.class);
-                startActivityForResult(intent, REQUEST_SHOP);
-        }
+    @SuppressWarnings("UnusedDeclaration")
+    @OnClick(R.id.track_deliveringButton)
+    protected void onDeliveringClicked() {
+        startVisit();
     }
 
+    @SuppressWarnings("UnusedDeclaration")
+    @OnClick(R.id.track_deliveredButton)
+    protected void onDeliveredClicked() {
+        sendStopVisit();
+        Intent intent = new Intent(getContext(), ShopListActivity.class);
+        startActivityForResult(intent, REQUEST_SHOP);
+    }
+
+    @SuppressWarnings("UnusedDeclaration")
+    @OnClick(R.id.track_stopButton)
+    protected void onStopClicked() {
+        sendStopStop();
+        mStop = null;
+        mLastLocation = null;
+        startIdle();
+    }
+
+    @SuppressWarnings("UnusedDeclaration")
     @OnClick(R.id.track_vehicleLayout)
     protected void onVehicleClicked() {
         Intent intent = new Intent(getContext(), VehicleListActivity.class);
@@ -263,8 +217,8 @@ public class TrackFragment extends FragmentResponder {
      */
 
     protected void resetRoute() {
-        mRoute = Lab.get(getContext()).getRoute();
-        mRoute.setVehicleId(Lab.get(getContext()).getVehicle().getId());
+        mRoute = mLab.getRoute();
+        mRoute.setVehicleId(mLab.getVehicle().getId());
     }
 
     protected void resetStop() {
@@ -280,6 +234,17 @@ public class TrackFragment extends FragmentResponder {
         }
     }
 
+    protected void resetVisit() {
+        mVisit = new Visit();
+        if (mLastLocation != null) {
+            mVisit.setLatitudeStart(mLastLocation.getLatitude());
+            mVisit.setLongitudeStart(mLastLocation.getLongitude());
+            mVisit.setLatitudeEnd(mLastLocation.getLatitude());
+            mVisit.setLongitudeEnd(mLastLocation.getLongitude());
+        }
+        mVisit.measureTime();
+    }
+
 
     /**
      * States
@@ -287,37 +252,44 @@ public class TrackFragment extends FragmentResponder {
 
     protected void startIdle() {
         resetStats();
-        goToState(State.IDLE);
+        goToState(TrackState.IDLE);
         stopTracking();
         hideAllViews();
         showIdleView();
     }
 
     protected void startWaitingLocation() {
-        goToState(State.WAITING_LOCATION);
+        goToState(TrackState.WAITING_LOCATION);
         hideAllViews();
         showWaitingLocationView();
         startBackgroundServices();
     }
 
-    protected void startDelivering() {
-        goToState(State.DELIVERING);
+    protected void startMenu() {
+        goToState(TrackState.DELIVERING);
         hideAllViews();
-        showDeliveringView();
-        startBackgroundServices();
+        showMenuView();
     }
 
-    protected void startTracking() {
-        goToState(State.TRACKING);
+    protected void startVisit() {
+        goToState(TrackState.TRACKING);
         hideAllViews();
         showTrackingView();
         startTimer(TIMER_LENGTH);
+        sendStartVisit();
         startBackgroundServices();
     }
 
     protected void checkIfWaitingForLocation() {
-        if (mState == State.WAITING_LOCATION) {
-            startDelivering();
+        if (mState == TrackState.WAITING_LOCATION) {
+            sendStartStop();
+            startVisit();
+            /*if (mStop == null) {
+                sendStartStop();
+                startVisit();
+            } else {
+                startMenu();
+            }*/
         }
     }
 
@@ -326,113 +298,39 @@ public class TrackFragment extends FragmentResponder {
      */
 
     protected void hideAllViews() {
-        mStatsLayout.setVisibility(View.GONE);
-        mStartButton.setVisibility(View.GONE);
-        mTimeTextView.setVisibility(View.GONE);
-        mActionButton.setVisibility(View.GONE);
-        mWaitingLocationTextView.setVisibility(View.GONE);
+        super.hideAllViews();
+        mDeliveringButton.setVisibility(View.GONE);
+        mDeliveredButton.setVisibility(View.GONE);
+        mStopButton.setVisibility(View.GONE);
     }
 
     protected void showIdleView() {
-        Animation fadeInAnimation = createFadeInAnimation(200);
-
         mStartButton.setVisibility(View.VISIBLE);
-        mOverlayLayout.setVisibility(View.VISIBLE);
-
-        fadeInAnimation.setAnimationListener(new Animation.AnimationListener() {
-            @Override
-            public void onAnimationStart(Animation animation) {
-            }
-
-            @Override
-            public void onAnimationEnd(Animation animation) {
-            }
-
-            @Override
-            public void onAnimationRepeat(Animation animation) {
-
-            }
-        });
     }
 
-    protected void showWaitingLocationView() {
-        Animation fadeOutAnimation = createFadeOutAnimation(200);
-
-        mWaitingLocationTextView.setVisibility(View.VISIBLE);
-
-        mOverlayLayout.startAnimation(fadeOutAnimation);
-
-        fadeOutAnimation.setAnimationListener(new Animation.AnimationListener() {
-            @Override
-            public void onAnimationStart(Animation animation) {
-            }
-
-            @Override
-            public void onAnimationEnd(Animation animation) {
-                mOverlayLayout.setVisibility(View.GONE);
-            }
-
-            @Override
-            public void onAnimationRepeat(Animation animation) {
-
-            }
-        });
-    }
-
-    protected void showDeliveringView() {
-        Animation fadeOutAnimation = createFadeOutAnimation(200);
-
-        mActionButton.setVisibility(View.VISIBLE);
-
-        mOverlayLayout.startAnimation(fadeOutAnimation);
-
-        fadeOutAnimation.setAnimationListener(new Animation.AnimationListener() {
-            @Override
-            public void onAnimationStart(Animation animation) {
-            }
-
-            @Override
-            public void onAnimationEnd(Animation animation) {
-                mOverlayLayout.setVisibility(View.GONE);
-            }
-
-            @Override
-            public void onAnimationRepeat(Animation animation) {
-
-            }
-        });
+    protected void showMenuView() {
+        mDeliveringButton.setVisibility(View.VISIBLE);
+        mStopButton.setVisibility(View.VISIBLE);
     }
 
     protected void showTrackingView() {
-        mActionButton.setVisibility(View.VISIBLE);
+        mDeliveredButton.setVisibility(View.VISIBLE);
         mTimeTextView.setVisibility(View.VISIBLE);
         mStatsLayout.setVisibility(View.VISIBLE);
     }
 
     protected void stopTracking() {
-        mStartButton.setVisibility(View.VISIBLE);
         stopTimer();
-        //sendResult(TargetListener.RESULT_OK);
         stopBackgroundServices();
-
-        Animation fadeInAnimation = createFadeInAnimation(200);
-
-        mOverlayLayout.setVisibility(View.VISIBLE);
-        mOverlayLayout.startAnimation(fadeInAnimation);
     }
 
     /**
      * View handling
      */
 
-    protected void goToState(State state) {
-        mState = state;
-        updateStateView();
-    }
-
     protected void updateStateView() {
         String label = "";
-        switch (mState) {
+        switch ((TrackState) mState) {
             case IDLE:
                 label = "idle";
                 break;
@@ -453,101 +351,12 @@ public class TrackFragment extends FragmentResponder {
         mVehicleTextView.setText(mVehicle.getPlates());
     }
 
-    /**
-     * General utilities
-     */
-
-    protected Animation createFadeInAnimation(int duration) {
-        Animation fadeIn = new AlphaAnimation(OVERLAY_OPACITY, 1);
-        fadeIn.setInterpolator(new DecelerateInterpolator());
-        fadeIn.setDuration(duration);
-
-        return fadeIn;
-    }
-
-    protected Animation createFadeOutAnimation(int duration) {
-        Animation fadeOut = new AlphaAnimation(1, OVERLAY_OPACITY);
-        fadeOut.setInterpolator(new AccelerateInterpolator());
-        fadeOut.setDuration(duration);
-
-        return fadeOut;
-    }
-
+    @SuppressWarnings("UnusedDeclaration")
     @Subscribe
     public void onLocationEvent(Location location) {
         updateStats(location);
-        checkIfWaitingForLocation();
-    }
-
-    protected void updateStats(Location location) {
-        if (mLastLocation != null) {
-            android.location.Location lastLocation = new android.location.Location("");
-            lastLocation.setLatitude(mLastLocation.getLatitude());
-            lastLocation.setLongitude(mLastLocation.getLongitude());
-
-            android.location.Location newLocation = new android.location.Location("");
-            newLocation.setLatitude(location.getLatitude());
-            newLocation.setLongitude(location.getLongitude());
-
-            /* Calculate distance */
-            float distanceInMeters = lastLocation.distanceTo(newLocation);
-            mAcumDistance += distanceInMeters / 1000.0f;
-            String distance = Helper.get(getActivity()).formatDouble(mAcumDistance);
-            mDistanceTextView.setText(distance + " km");
-
-            /* Calculate speed */
-            String speed = Helper.get(getActivity()).formatDouble(location.getSpeed());
-            mSpeedTextView.setText(speed + " kph");
-
-            /* Average speed */
-            mAcumSpeed = mAcumSpeed.add(new BigDecimal(location.getSpeed()));
-            mSpeedCount = mSpeedCount.add(new BigDecimal(1));
-            String averageSpeed = Helper.get(getActivity()).formatDouble(mAcumSpeed.divide(mSpeedCount, 2, RoundingMode.HALF_UP).doubleValue());
-            mAverageSpeedTextView.setText(averageSpeed + " kph");
-        }
         mLastLocation = location;
-
-    }
-
-    protected void updateTime() {
-        mTimeTextView.setText(secondsToString(times));
-    }
-
-    protected void resetStats() {
-        mAcumSpeed = new BigDecimal(0);
-        mSpeedCount = new BigDecimal(0);
-        mAcumDistance = 0;
-        times = 0;
-    }
-
-    private String secondsToString(int time) {
-        int mins = time / 60;
-        int secs = time % 60;
-
-        String strMin = String.format("%02d", mins);
-        String strSec = String.format("%02d", secs);
-        return String.format("%s:%s", strMin, strSec);
-    }
-
-    protected void startTimer(final int time) {
-        stopTimer();
-        mCountDownTimer = new CountDownTimer(time, 1000) {
-            public void onTick(long millisUntilFinished) {
-            }
-
-            public void onFinish() {
-                times++;
-                updateTime();
-                startTimer(time);
-            }
-        };
-        mCountDownTimer.start();
-    }
-
-    protected void stopTimer() {
-        if (mCountDownTimer != null) {
-            mCountDownTimer.cancel();
-        }
+        checkIfWaitingForLocation();
     }
 
     /**
@@ -557,7 +366,7 @@ public class TrackFragment extends FragmentResponder {
     protected void sendAssignVehicle(Vehicle vehicle, User user) {
         RequestParams params = user.buildParams();
         params.put(Vehicle.JSON_WRAPPER, vehicle.toHashMap());
-        mAPIFetch.post("routes/postAssign", params, new APIResponseHandler(getActivity(), getActivity().getSupportFragmentManager(), false) {
+        /*mAPIFetch.post("routes/postAssign", params, new APIResponseHandler(getActivity(), getActivity().getSupportFragmentManager(), false) {
             @Override
             public void onSuccess(int statusCode, Header[] headers, JSONObject response) {
                 try {
@@ -571,12 +380,12 @@ public class TrackFragment extends FragmentResponder {
             @Override
             public void onFinish(boolean success) {
             }
-        });
+        });*/
     }
 
     protected void routeCreated(Route route) {
         mRoute = route;
-        Lab.get(getContext()).setRoute(mRoute).saveRoute();
+        mLab.setRoute(mRoute).saveRoute();
         startBackgroundServices();
     }
 
@@ -584,55 +393,33 @@ public class TrackFragment extends FragmentResponder {
      * Stop
      */
 
-    protected void sendStartTracking() {
+    protected void sendStartStop() {
         resetStop();
-        RequestParams params = mStop.buildParams();
-        Log.d("startTracking", params.toString());
-        mAPIFetch.post("cstops/postInitialcstop", params, new APIResponseHandler(getActivity(), getActivity().getSupportFragmentManager(), false) {
-            @Override
-            public void onSuccess(int statusCode, Header[] headers, JSONObject response) {
-                try {
-                    stopCreated(new CStop(response));
-                } catch (Exception e) {
-                    e.printStackTrace();
-                }
-                super.onSuccess(statusCode, headers, response);
-            }
-
-            @Override
-            public void onFinish(boolean success) {
-            }
-        });
+        CreateCStopTask task = new CreateCStopTask(mStop);
+        mNetworkTaskQueueWrapper.changeToNewQueue();
+        mNetworkTaskQueueWrapper.addTask(task);
     }
 
-    protected void sendStopTracking() {
+    protected void sendStopStop() {
         mStop.measureTime();
-        RequestParams params = mStop.buildParams();
-        params.put(User.JSON_ID, mUser.getId());
-        mAPIFetch.post("cstops/postEndcstop", params, new APIResponseHandler(getActivity(), getActivity().getSupportFragmentManager(), false) {
-            @Override
-            public void onSuccess(int statusCode, Header[] headers, JSONObject response) {
-                try {
-                    stopEnded(new CStop(response));
-                } catch (Exception e) {
-                    e.printStackTrace();
-                }
-                super.onSuccess(statusCode, headers, response);
-            }
-
-            @Override
-            public void onFinish(boolean success) {
-            }
-        });
+        StopCStopTask task = new StopCStopTask(mStop);
+        mNetworkTaskQueueWrapper.addTask(task);
     }
 
+    /**
+     * Visit
+     */
 
-    protected void stopCreated(CStop stop) {
-        mStop = stop;
+    protected void sendStartVisit() {
+        resetVisit();
+        CreateVisitTask task = new CreateVisitTask(mVisit);
+        mNetworkTaskQueueWrapper.addTask(task);
     }
 
-    protected void stopEnded(CStop stop) {
-        resetStop();
+    protected void sendStopVisit() {
+        mVisit.measureTime();
+        StopVisitTask task = new StopVisitTask(mVisit);
+        mNetworkTaskQueueWrapper.addTask(task);
     }
 
     protected void startBackgroundServices() {
@@ -643,11 +430,5 @@ public class TrackFragment extends FragmentResponder {
     protected void stopBackgroundServices() {
         Intent intent = new Intent(getActivity(), LocationManagerService.class);
         getActivity().stopService(intent);
-    }
-
-    private void sendResult(int resultCode) {
-        if (getTargetListener() == null) return;
-
-        getTargetListener().onResult(getRequestCode(), resultCode, null);
     }
 }

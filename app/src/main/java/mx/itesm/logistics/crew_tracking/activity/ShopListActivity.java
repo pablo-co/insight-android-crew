@@ -27,13 +27,13 @@ package mx.itesm.logistics.crew_tracking.activity;
 
 import android.app.Activity;
 import android.content.Intent;
-import android.os.Bundle;
 import android.support.v4.app.Fragment;
-import android.support.v7.widget.Toolbar;
 
+import edu.mit.lastmite.insight_library.activity.SingleFragmentActivity;
 import edu.mit.lastmite.insight_library.communication.TargetListener;
-import mx.itesm.logistics.crew_tracking.R;
+import edu.mit.lastmite.insight_library.util.ApplicationComponent;
 import mx.itesm.logistics.crew_tracking.fragment.ShopListFragment;
+import mx.itesm.logistics.crew_tracking.util.CrewAppComponent;
 
 
 public class ShopListActivity extends SingleFragmentActivity implements TargetListener {
@@ -50,13 +50,8 @@ public class ShopListActivity extends SingleFragmentActivity implements TargetLi
     }
 
     @Override
-    protected void onCreate(Bundle savedInstanceState) {
-        super.onCreate(savedInstanceState);
-        Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
-        setSupportActionBar(toolbar);
-        getSupportActionBar().setDisplayHomeAsUpEnabled(true);
-        getSupportActionBar().setDisplayShowHomeEnabled(true);
-        getSupportActionBar().setHomeButtonEnabled(true);
+    public void injectActivity(ApplicationComponent component) {
+        ((CrewAppComponent) component).inject(this);
     }
 
     @Override
@@ -71,5 +66,9 @@ public class ShopListActivity extends SingleFragmentActivity implements TargetLi
                 finish();
                 break;
         }
+    }
+
+    @Override
+    public void onBackPressed() {
     }
 }

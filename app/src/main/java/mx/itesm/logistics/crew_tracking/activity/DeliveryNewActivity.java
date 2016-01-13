@@ -29,34 +29,58 @@ import android.app.Activity;
 import android.content.Intent;
 import android.os.Bundle;
 import android.support.v4.app.Fragment;
-import android.support.v7.widget.Toolbar;
 
+import javax.inject.Inject;
+
+import edu.mit.lastmite.insight_library.activity.SingleFragmentActivity;
+import edu.mit.lastmite.insight_library.annotation.ServiceConstant;
 import edu.mit.lastmite.insight_library.communication.TargetListener;
+import edu.mit.lastmite.insight_library.util.ApplicationComponent;
+import edu.mit.lastmite.insight_library.util.ServiceUtils;
+import edu.mit.lastmite.insight_library.util.Storage;
 import mx.itesm.logistics.crew_tracking.R;
 import mx.itesm.logistics.crew_tracking.fragment.DeliveryFormFragment;
+import mx.itesm.logistics.crew_tracking.util.CrewAppComponent;
+import mx.itesm.logistics.crew_tracking.util.Lab;
+import mx.itesm.logistics.crew_tracking.util.Preferences;
 
 
 public class DeliveryNewActivity extends SingleFragmentActivity implements TargetListener {
 
-    public static final String EXTRA_DELIVERY = "com.gruporaido.tasker.extra_delivery";
+    @ServiceConstant
+    public static String EXTRA_DELIVERY;
+
+    static {
+        ServiceUtils.populateConstants(DeliveryNewActivity.class);
+    }
+
+    @Inject
+    protected Storage mStorage;
 
     public static final int REQUEST_DELIVERY = 0;
 
     @Override
     protected Fragment createFragment() {
-        DeliveryFormFragment fragment = new DeliveryFormFragment();
+        DeliveryFormFragment fragment = DeliveryFormFragment.newInstance(
+                mStorage.getGlobalFloat(Preferences.PREFERENCES_LATITUDE),
+                mStorage.getGlobalFloat(Preferences.PREFERENCES_LONGITUDE)
+        );
         fragment.setTargetListener(this, REQUEST_DELIVERY);
         return fragment;
     }
 
     @Override
-    protected void onCreate(Bundle savedInstanceState) {
+    public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
-        setSupportActionBar(toolbar);
+        getSupportActionBar().setTitle(getString(R.string.cstop_list_title));
         getSupportActionBar().setDisplayHomeAsUpEnabled(true);
         getSupportActionBar().setDisplayShowHomeEnabled(true);
         getSupportActionBar().setHomeButtonEnabled(true);
+    }
+
+    @Override
+    public void injectActivity(ApplicationComponent component) {
+        ((CrewAppComponent) component).inject(this);
     }
 
     @Override

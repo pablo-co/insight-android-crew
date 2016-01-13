@@ -49,6 +49,7 @@ import javax.inject.Inject;
 
 import butterknife.Bind;
 import butterknife.ButterKnife;
+import edu.mit.lastmite.insight_library.annotation.ServiceConstant;
 import edu.mit.lastmite.insight_library.communication.TargetListener;
 import edu.mit.lastmite.insight_library.fragment.FragmentResponder;
 import edu.mit.lastmite.insight_library.http.APIFetch;
@@ -56,20 +57,26 @@ import edu.mit.lastmite.insight_library.http.APIResponseHandler;
 import edu.mit.lastmite.insight_library.model.User;
 import edu.mit.lastmite.insight_library.model.Vehicle;
 import edu.mit.lastmite.insight_library.util.ApplicationComponent;
+import edu.mit.lastmite.insight_library.util.ServiceUtils;
 import mx.itesm.logistics.crew_tracking.R;
 import mx.itesm.logistics.crew_tracking.util.CrewAppComponent;
 import mx.itesm.logistics.crew_tracking.util.Lab;
 
 public class VehicleListFragment extends FragmentResponder implements ListView.OnItemClickListener {
+    private static final String TAG = "VehicleListFragment";
 
-    public static final String TAG = "VehicleListFragment";
+    @ServiceConstant
+    public static String EXTRA_VEHICLE;
 
-    public static final String EXTRA_VEHICLE = "com.gruporaido.tasker.extra_vehicle";
+    static {
+        ServiceUtils.populateConstants(VehicleListFragment.class);
+    }
+
+    @Inject
+    protected Lab mLab;
 
     protected User mUser;
-
     protected VehicleAdapter mVehicleAdapter;
-
     protected ArrayList<Vehicle> mVehicles;
 
     @Inject
@@ -95,7 +102,7 @@ public class VehicleListFragment extends FragmentResponder implements ListView.O
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        mUser = Lab.get(getActivity()).getUser();
+        mUser = mLab.getUser();
         mVehicles = new ArrayList<>();
         mVehicleAdapter = new VehicleAdapter(mVehicles);
         loadVehicles();
@@ -200,5 +207,4 @@ public class VehicleListFragment extends FragmentResponder implements ListView.O
             return convertView;
         }
     }
-
 }

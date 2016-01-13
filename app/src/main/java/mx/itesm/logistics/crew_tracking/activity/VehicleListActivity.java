@@ -29,11 +29,13 @@ import android.app.Activity;
 import android.content.Intent;
 import android.os.Bundle;
 import android.support.v4.app.Fragment;
-import android.support.v7.widget.Toolbar;
 
+import edu.mit.lastmite.insight_library.activity.SingleFragmentActivity;
 import edu.mit.lastmite.insight_library.communication.TargetListener;
+import edu.mit.lastmite.insight_library.util.ApplicationComponent;
 import mx.itesm.logistics.crew_tracking.R;
 import mx.itesm.logistics.crew_tracking.fragment.VehicleListFragment;
+import mx.itesm.logistics.crew_tracking.util.CrewAppComponent;
 
 
 public class VehicleListActivity extends SingleFragmentActivity implements TargetListener {
@@ -50,10 +52,14 @@ public class VehicleListActivity extends SingleFragmentActivity implements Targe
     }
 
     @Override
+    public void injectActivity(ApplicationComponent component) {
+        ((CrewAppComponent) component).inject(this);
+    }
+
+    @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
-        setSupportActionBar(toolbar);
+        getSupportActionBar().setTitle(getString(R.string.vehicle_list_title));
         getSupportActionBar().setDisplayHomeAsUpEnabled(true);
         getSupportActionBar().setDisplayShowHomeEnabled(true);
         getSupportActionBar().setHomeButtonEnabled(true);

@@ -1,0 +1,62 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:orientation="horizontal"
+    android:padding="16dp">
+
+    <edu.mit.lastmite.insight_library.view.CircleImageView
+        android:id="@+id/item_cstop_locationCircleImageView"
+        android:layout_width="72dp"
+        android:layout_height="72dp"
+        android:layout_gravity="center_vertical"/>
+
+    <LinearLayout
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:layout_marginLeft="8dp"
+        android:layout_weight="1"
+        android:gravity="center_vertical"
+        android:orientation="vertical">
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="@string/cstop_start_time"
+            android:textColor="@color/accent"
+            android:layout_gravity="center_horizontal"
+            android:textSize="11sp"/>
+
+        <TextView
+            android:id="@+id/item_cstop_startTimeTextView"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginBottom="4dp"
+            android:layout_gravity="center_horizontal"
+            android:textColor="@color/normal"
+            android:textSize="14sp"
+            android:textStyle="normal"/>
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="@string/cstop_end_time"
+            android:layout_gravity="center_horizontal"
+            android:textColor="@color/accent"
+            android:textSize="11sp"/>
+
+        <TextView
+            android:id="@+id/item_cstop_endTimeTextView"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginBottom="4dp"
+            android:layout_gravity="center_horizontal"
+            android:textColor="@color/normal"
+            android:textSize="14sp"
+            android:textStyle="normal"/>
+
+    </LinearLayout>
+
+
+</LinearLayout>

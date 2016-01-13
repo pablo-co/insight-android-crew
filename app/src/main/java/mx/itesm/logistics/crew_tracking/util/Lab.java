@@ -41,8 +41,6 @@ public class Lab {
     protected static final String VEHICLE_FILENAME = "vehicle.json";
     protected static final String ROUTE_FILENAME = "route.json";
 
-    protected static Lab sLab;
-
     protected static User mUser;
     protected static Vehicle mVehicle;
     protected static Route mRoute;
@@ -51,10 +49,9 @@ public class Lab {
     protected JSONSerializer mVehicleSerializer;
     protected JSONSerializer mRouteSerializer;
 
-
     private Context mAppContext;
 
-    private Lab(Context appContext) {
+    public Lab(Context appContext) {
         mAppContext = appContext;
 
         mUserSerializer = new JSONSerializer(appContext, USER_FILENAME);
@@ -79,7 +76,6 @@ public class Lab {
             }
         }
 
-
         mRouteSerializer = new JSONSerializer(appContext, ROUTE_FILENAME);
         try {
             mRoute = (Route) mRouteSerializer.loadObject("edu.mit.lastmite.insight_library.model.Route");
@@ -92,20 +88,13 @@ public class Lab {
         }
     }
 
-    public static Lab get(Context appContext) {
-        if (sLab == null) {
-            sLab = new Lab(appContext);
-        }
-        return sLab;
-    }
-
     public User getUser() {
         return mUser;
     }
 
     public Lab setUser(User user) {
         mUser = user;
-        return sLab;
+        return this;
     }
 
     public boolean saveUser() {
@@ -135,7 +124,7 @@ public class Lab {
 
     public Lab setVehicle(Vehicle vehicle) {
         mVehicle = vehicle;
-        return sLab;
+        return this;
     }
 
     public boolean saveVehicle() {
@@ -165,7 +154,7 @@ public class Lab {
 
     public Lab setRoute(Route Route) {
         mRoute = Route;
-        return sLab;
+        return this;
     }
 
     public boolean saveRoute() {

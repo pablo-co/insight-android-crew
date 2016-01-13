@@ -31,30 +31,50 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ArrayAdapter;
+import android.widget.EditText;
 
 import com.dd.CircularProgressButton;
+import com.rey.material.widget.CheckBox;
 import com.rey.material.widget.Spinner;
 
 import org.apache.http.Header;
 import org.json.JSONObject;
 
+import java.io.Serializable;
+
 import javax.inject.Inject;
 
 import butterknife.Bind;
 import butterknife.ButterKnife;
+import butterknife.OnClick;
+import edu.mit.lastmite.insight_library.annotation.ServiceConstant;
 import edu.mit.lastmite.insight_library.communication.TargetListener;
 import edu.mit.lastmite.insight_library.fragment.FragmentResponder;
 import edu.mit.lastmite.insight_library.http.APIFetch;
 import edu.mit.lastmite.insight_library.http.APIResponseHandler;
 import edu.mit.lastmite.insight_library.model.Delivery;
 import edu.mit.lastmite.insight_library.model.Errorable;
+import edu.mit.lastmite.insight_library.model.Location;
+import edu.mit.lastmite.insight_library.util.ServiceUtils;
 import mx.itesm.logistics.crew_tracking.R;
+import mx.itesm.logistics.crew_tracking.util.Lab;
 
 public class DeliveryFormFragment extends FragmentResponder implements Errorable {
 
     private static final String TAG = "DeliveryFormFragment";
 
-    public static final String EXTRA_DELIVERY = "mx.itesm.cartokm2.delivery";
+    @ServiceConstant
+    public static String EXTRA_LATITUDE;
+
+    @ServiceConstant
+    public static String EXTRA_LONGITUDE;
+
+    @ServiceConstant
+    public static String EXTRA_DELIVERY;
+
+    static {
+        ServiceUtils.populateConstants(DeliveryFormFragment.class);
+    }
 
     @Inject
     protected APIFetch mAPIFetch;
@@ -65,18 +85,37 @@ public class DeliveryFormFragment extends FragmentResponder implements Errorable
     @Bind(R.id.delivery_typeSpinner)
     protected Spinner mTypeSpinner;
 
-    @Bind(R.id.delivery_packageTypeSpinner)
-    protected Spinner mPackageSpinner;
+    @Bind(R.id.delivery_orderIdEditText)
+    protected EditText mOrderIdEditText;
+
+    @Bind(R.id.delivery_beyondSegmentCheckBox)
+    protected CheckBox mBeyondSegmentCheckBox;
+
+    @Bind(R.id.delivery_equipmentUsedCheckBox)
+    protected CheckBox mEquipmentCheckBox;
 
     protected Delivery mDelivery;
+    protected float mLatitude;
+    protected float mLongitude;
+
+    public static DeliveryFormFragment newInstance(float latitude, float longitude) {
+        Bundle arguments = new Bundle();
+        arguments.putSerializable(EXTRA_LATITUDE, latitude);
+        arguments.putSerializable(EXTRA_LONGITUDE, longitude);
+
+        DeliveryFormFragment fragment = new DeliveryFormFragment();
+        fragment.setArguments(arguments);
+        return fragment;
+    }
 
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        //mDelivery = (Delivery) getArguments().getSerializable(EXTRA_VEHICLE);
-        if (mDelivery == null) {
-            mDelivery = new Delivery();
-        }
+        mLatitude = getArguments().getFloat(EXTRA_LATITUDE);
+        mLongitude = getArguments().getFloat(EXTRA_LONGITUDE);
+        mDelivery = new Delivery();
+        mDelivery.setLatitude(Double.valueOf(mLatitude));
+        mDelivery.setLongitude(Double.valueOf(mLongitude));
     }
 
     @Override
@@ -89,21 +128,9 @@ public class DeliveryFormFragment extends FragmentResponder implements Errorable
         adapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
         mTypeSpinner.setAdapter(adapter);
 
-        ArrayAdapter<CharSequence> packageAdapter = ArrayAdapter.createFromResource(getActivity(),
-                R.array.delivery_packages_array, android.R.layout.simple_spinner_item);
-        packageAdapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
-        mPackageSpinner.setAdapter(packageAdapter);
-
         mActionButton.setIdleText(getString(R.string.action_next));
         mActionButton.setIndeterminateProgressMode(true);
-        mActionButton.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                updateDelivery();
-                sendResult(TargetListener.RESULT_OK, null);
-                //saveDelivery();
-            }
-        });
+
         return view;
     }
 
@@ -117,67 +144,20 @@ public class DeliveryFormFragment extends FragmentResponder implements Errorable
         }
     }
 
+    @OnClick(R.id.actionButton)
+    public void onActionClicked() {
+        updateDelivery();
+        sendResult(TargetListener.RESULT_OK, mDelivery);
+    }
+
     protected void clearErrors() {
     }
 
     protected void updateDelivery() {
-        //mDelivery.setIdentifier(mDeliveryIdentifier.getText().toString());
-    }
-
-    private void lockView() {
-        mActionButton.setProgress(0);
-        mActionButton.setProgress(1);
-        switchControlState(false);
-    }
-
-    private void unlockView() {
-        switchControlState(true);
-    }
-
-    private void switchControlState(boolean state) {
-        //mDeliveryIdentifier.setEnabled(state);
-    }
-
-    private void unlock(boolean success) {
-        int progress = 0;
-        if (!success) progress = -1;
-        mActionButton.setProgress(progress);
-        unlockView();
-    }
-
-    protected void saveDelivery() {
-        mAPIFetch.post("deliveries.json", mDelivery.buildParams(), new APIResponseHandler(getActivity(), getActivity().getSupportFragmentManager(), false) {
-            @Override
-            public void onSuccess(int statusCode, Header[] headers, JSONObject response) {
-                super.onSuccess(statusCode, headers, response);
-                unlock(true);
-                try {
-                    sendResult(TargetListener.RESULT_OK, new Delivery(response));
-                } catch (Exception e) {
-                    e.printStackTrace();
-                }
-            }
-
-            @Override
-            public void onFailure(int statusCode, Header[] headers, Throwable throwable, JSONObject errorResponse) {
-                unlock(false);
-                switch (statusCode) {
-                    case 422:
-                        try {
-                            JSONObject errors = errorResponse.getJSONObject("errors");
-                            setErrors(errors);
-                        } catch (Exception e) {
-                            e.printStackTrace();
-                        }
-                        break;
-                }
-                super.onFailure(statusCode, headers, throwable, errorResponse);
-            }
-
-        });
-
-
-        lockView();
+        mDelivery.setEquipment(mEquipmentCheckBox.isChecked());
+        mDelivery.setBeyondSegment(mBeyondSegmentCheckBox.isChecked());
+        mDelivery.setType(Integer.valueOf(mTypeSpinner.getSelectedItem().toString()));
+        mDelivery.setOrderId(Long.valueOf(mOrderIdEditText.getText().toString()));
     }
 
     private void sendResult(int resultCode, Delivery delivery) {

@@ -30,26 +30,23 @@ import android.app.Activity;
 import android.content.Intent;
 import android.os.Bundle;
 import android.os.Parcelable;
+import android.support.design.widget.Snackbar;
 import android.support.v4.app.Fragment;
-import android.support.v7.widget.ListViewCompat;
 import android.view.LayoutInflater;
+import android.view.Menu;
+import android.view.MenuInflater;
+import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
 import android.view.ViewTreeObserver;
 import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
 import android.widget.FrameLayout;
+import android.widget.ListView;
 
-import com.airbnb.android.airmapview.AirMapInterface;
-import com.airbnb.android.airmapview.AirMapMarker;
-import com.airbnb.android.airmapview.AirMapView;
-import com.airbnb.android.airmapview.listeners.OnMapInitializedListener;
-import com.google.android.gms.maps.model.LatLng;
-import com.rey.material.widget.ListView;
 import com.rey.material.widget.ProgressView;
 import com.rey.material.widget.TextView;
 import com.squareup.otto.Bus;
-import com.squareup.otto.Subscribe;
 
 import org.apache.http.Header;
 import org.json.JSONArray;
@@ -62,27 +59,42 @@ import javax.inject.Inject;
 import butterknife.Bind;
 import butterknife.ButterKnife;
 import butterknife.OnClick;
+import edu.mit.lastmite.insight_library.annotation.ServiceConstant;
 import edu.mit.lastmite.insight_library.communication.TargetListener;
 import edu.mit.lastmite.insight_library.fragment.FragmentResponder;
 import edu.mit.lastmite.insight_library.fragment.InsightMapsFragment;
 import edu.mit.lastmite.insight_library.http.APIFetch;
 import edu.mit.lastmite.insight_library.http.APIResponseHandler;
+import edu.mit.lastmite.insight_library.model.Delivery;
 import edu.mit.lastmite.insight_library.model.Shop;
 import edu.mit.lastmite.insight_library.util.ApplicationComponent;
 import edu.mit.lastmite.insight_library.util.Helper;
+import edu.mit.lastmite.insight_library.util.ServiceUtils;
+import edu.mit.lastmite.insight_library.view.NestedListView;
 import mx.itesm.logistics.crew_tracking.R;
 import mx.itesm.logistics.crew_tracking.activity.DeliveryNewActivity;
+import edu.mit.lastmite.insight_library.queue.NetworkTaskQueueWrapper;
+import mx.itesm.logistics.crew_tracking.queue.CrewNetworkTaskQueueWrapper;
+import mx.itesm.logistics.crew_tracking.task.CreateDeliveryTask;
 import mx.itesm.logistics.crew_tracking.util.CrewAppComponent;
 
 public class ShopListFragment extends FragmentResponder implements ListView.OnItemClickListener {
 
     public static final String TAG = "ShopListFragment";
 
-    public static final String EXTRA_CARD = "com.gruporaido.tasker.extra_card";
+    @ServiceConstant
+    public static String EXTRA_CARD;
+
+    static {
+        ServiceUtils.populateConstants(ShopListFragment.class);
+    }
 
     public static final int REQUEST_NEW = 0;
     public static final double MAP_PERCENTAGE = 0.5;
-    public static final int MAP_OFFSET = 0;
+    public static final int MAP_OFFSET = 32;
+
+    @Inject
+    protected CrewNetworkTaskQueueWrapper mQueueWrapper;
 
     @Inject
     protected APIFetch mAPIFetch;
@@ -90,28 +102,30 @@ public class ShopListFragment extends FragmentResponder implements ListView.OnIt
     @Inject
     protected Bus mBus;
 
-    protected Shop mShop;
+    @Inject
+    protected Helper mHelper;
 
     /**
      * Layouts
      **/
 
     @Bind(R.id.list_shop_rootLayout)
-    FrameLayout mRootLayout;
+    protected FrameLayout mRootLayout;
 
     @Bind(R.id.shopListsLayout)
-    FrameLayout mShopListsLayout;
+    protected FrameLayout mShopListsLayout;
 
 
     /**
      * Shops
      **/
 
+    protected Shop mShop;
     protected ArrayList<Shop> mShops;
     protected ShopAdapter mShopAdapter;
 
     @Bind(R.id.shopsListView)
-    protected ListView mShopsListView;
+    protected NestedListView mShopsListView;
 
     @Bind(R.id.shopsLoadingProgressView)
     protected ProgressView mShopsLoadingProgressView;
@@ -128,7 +142,7 @@ public class ShopListFragment extends FragmentResponder implements ListView.OnIt
     protected ShopAdapter mNearbyAdapter;
 
     @Bind(R.id.nearbyListView)
-    protected ListView mNearbyListView;
+    protected NestedListView mNearbyListView;
 
     @Bind(R.id.nearbyLoadingProgressView)
     protected ProgressView mNearbyLoadingProgressView;
@@ -145,12 +159,16 @@ public class ShopListFragment extends FragmentResponder implements ListView.OnIt
 
     @Override
     public void injectFragment(ApplicationComponent component) {
+        super.injectFragment(component);
         ((CrewAppComponent) component).inject(this);
     }
 
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+        setRetainInstance(true);
+        setHasOptionsMenu(true);
+
         mShops = new ArrayList<>();
         mShopAdapter = new ShopAdapter(mShops);
 
@@ -167,14 +185,12 @@ public class ShopListFragment extends FragmentResponder implements ListView.OnIt
 
         mShopsListView.setEmptyView(mShopsEmptyView);
         mShopsListView.setAdapter(mShopAdapter);
-        Helper.get(getActivity()).setListViewHeightBasedOnChildren((ListViewCompat) mShopsListView);
 
-        //mNearbyListView.setEmptyView(mNearbyLoadingProgressView);
         mNearbyListView.setEmptyView(mNearbyLoadingProgressView);
         mNearbyListView.setAdapter(mNearbyAdapter);
         mNearbyListView.setOnItemClickListener(this);
-        Helper.get(getActivity()).setListViewHeightBasedOnChildren((ListViewCompat) mNearbyListView);
 
+        checkForConnectivity(view);
         loadShops();
 
         return view;
@@ -184,11 +200,10 @@ public class ShopListFragment extends FragmentResponder implements ListView.OnIt
     public void onViewCreated(View view, Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
 
-        Helper.get(getContext()).inflateFragment(getChildFragmentManager(), R.id.list_shop_mapLayout, new Helper.FragmentCreator() {
+        mHelper.inflateFragment(getChildFragmentManager(), R.id.list_shop_mapLayout, new Helper.FragmentCreator() {
             @Override
             public Fragment createFragment() {
-                return InsightMapsFragment.newInstance(InsightMapsFragment.Flags.DRAW_MARKER |
-                        InsightMapsFragment.Flags.ROTATE_WITH_DEVICE);
+                return InsightMapsFragment.newInstance(InsightMapsFragment.Flags.DRAW_MARKER);
             }
         }, R.animator.no_animation, R.animator.no_animation);
 
@@ -206,9 +221,25 @@ public class ShopListFragment extends FragmentResponder implements ListView.OnIt
     public void onStart() {
         super.onStart();
         if (mShops.isEmpty()) {
-            //mShopsLoadingProgressView.setVisibility(View.VISIBLE);
             mShopsLoadingProgressView.setVisibility(View.GONE);
             mNearbyLoadingProgressView.setVisibility(View.VISIBLE);
+        }
+    }
+
+    @Override
+    public void onCreateOptionsMenu(Menu menu, MenuInflater menuInflater) {
+        super.onCreateOptionsMenu(menu, menuInflater);
+        menuInflater.inflate(R.menu.menu_shop_list, menu);
+    }
+
+    @Override
+    public boolean onOptionsItemSelected(MenuItem menuItem) {
+        switch (menuItem.getItemId()) {
+            case R.id.shop_menu_item_close:
+                sendResult(TargetListener.RESULT_OK, null);
+                return true;
+            default:
+                return super.onOptionsItemSelected(menuItem);
         }
     }
 
@@ -219,16 +250,14 @@ public class ShopListFragment extends FragmentResponder implements ListView.OnIt
         super.onActivityResult(requestCode, resultCode, data);
         switch (requestCode) {
             case REQUEST_NEW:
+                sendDelivery((Delivery) data.getSerializableExtra(DeliveryNewActivity.EXTRA_DELIVERY));
                 if (mShop != null) {
                     mShops.add(mShop);
                     mNearby.remove(mShop);
-                    mShopAdapter.notifyDataSetChanged();
-                    mNearbyAdapter.notifyDataSetChanged();
-                    Helper.get(getActivity()).setListViewHeightBasedOnChildren((ListViewCompat) mNearbyListView);
-                    Helper.get(getActivity()).setListViewHeightBasedOnChildren((ListViewCompat) mShopsListView);
+                    notifyNearbyList();
+                    notifyShopList();
                     mShop = null;
                 }
-                //loadShops();
                 break;
         }
     }
@@ -236,18 +265,31 @@ public class ShopListFragment extends FragmentResponder implements ListView.OnIt
     @Override
     public void onItemClick(AdapterView adapterView, View view, int position, long id) {
         mShop = (Shop) adapterView.getAdapter().getItem(position);
-        Intent intent = new Intent(getActivity(), DeliveryNewActivity.class);
-        startActivityForResult(intent, REQUEST_NEW);
-        //sendResult(TargetListener.RESULT_OK, mShops.get(position));
+        launchNewDelivery();
     }
 
-    @OnClick(R.id.nextFloatingActionButton)
+    @OnClick(R.id.newDeliveryButton)
     protected void onActionClick() {
-        sendResult(TargetListener.RESULT_OK, null);
+        launchNewDelivery();
+    }
+
+    protected void sendDelivery(Delivery delivery) {
+        if (delivery != null) {
+            CreateDeliveryTask task = new CreateDeliveryTask(delivery);
+            mQueueWrapper.addTask(task);
+        }
+    }
+
+    protected void notifyNearbyList() {
+        mNearbyAdapter.notifyDataSetChanged();
+    }
+
+    protected void notifyShopList() {
+        mShopAdapter.notifyDataSetChanged();
     }
 
     protected void adjustLayoutPositioning() {
-        int height = (int) (mRootLayout.getHeight() * MAP_PERCENTAGE);
+        int height = (int) (mRootLayout.getHeight() * MAP_PERCENTAGE) - mHelper.dpToPx(MAP_OFFSET);
         FrameLayout.LayoutParams layoutParams = new FrameLayout.LayoutParams(
                 FrameLayout.LayoutParams.MATCH_PARENT,
                 FrameLayout.LayoutParams.MATCH_PARENT
@@ -271,11 +313,6 @@ public class ShopListFragment extends FragmentResponder implements ListView.OnIt
                 } catch (Exception e) {
                     e.printStackTrace();
                 }
-                try {
-
-                } catch (Exception e) {
-                    e.printStackTrace();
-                }
                 super.onSuccess(statusCode, headers, response);
             }
 
@@ -286,7 +323,6 @@ public class ShopListFragment extends FragmentResponder implements ListView.OnIt
             }
         });
     }
-
 
     protected void addShopsFromJSON(JSONArray response) {
         try {
@@ -303,11 +339,23 @@ public class ShopListFragment extends FragmentResponder implements ListView.OnIt
         mNearbyAdapter.notifyDataSetChanged();
         mNearbyLoadingProgressView.setVisibility(View.GONE);
         mNearbyListView.setEmptyView(mNearbyEmptyView);
-        Helper.get(getActivity()).setListViewHeightBasedOnChildren((ListViewCompat) mNearbyListView);
-        Helper.get(getActivity()).setListViewHeightBasedOnChildren((ListViewCompat) mShopsListView);
     }
 
-    private void sendResult(int resultCode, Shop shop) {
+    protected boolean checkForConnectivity(View view) {
+        if (!mAPIFetch.isNetworkAvailable()) {
+            Snackbar.make(view, getString(R.string.error_no_connectivity), Snackbar.LENGTH_INDEFINITE)
+                    .setAction(getString(R.string.action_ok), null).show();
+            return false;
+        }
+        return true;
+    }
+
+    protected void launchNewDelivery() {
+        Intent intent = new Intent(getActivity(), DeliveryNewActivity.class);
+        startActivityForResult(intent, REQUEST_NEW);
+    }
+
+    protected void sendResult(int resultCode, Shop shop) {
         if (getTargetListener() == null) {
             return;
         }
@@ -339,7 +387,7 @@ public class ShopListFragment extends FragmentResponder implements ListView.OnIt
             addressTextView.setText("Avenida de los Bosques #45, Alvaro Obregon, Edo. de Mex.");
 
             TextView distanceTextView = (TextView) convertView.findViewById(R.id.item_shop_distanceTextView);
-            distanceTextView.setText(Helper.get(getActivity()).formatDouble(shop.getDistance() / 1000.0));
+            distanceTextView.setText(mHelper.formatDouble(shop.getDistance() / 1000.0));
 
             return convertView;
         }

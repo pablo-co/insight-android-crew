@@ -39,15 +39,13 @@ import com.google.android.gms.location.LocationRequest;
 import com.google.android.gms.location.LocationServices;
 import com.squareup.otto.Bus;
 
-import org.apache.http.Header;
-import org.json.JSONObject;
-
 import javax.inject.Inject;
 
-import edu.mit.lastmite.insight_library.http.APIFetch;
-import edu.mit.lastmite.insight_library.http.APIResponseHandler;
 import edu.mit.lastmite.insight_library.service.DaggerIntentService;
 import edu.mit.lastmite.insight_library.util.ApplicationComponent;
+import mx.itesm.logistics.crew_tracking.model.CrewLocation;
+import mx.itesm.logistics.crew_tracking.queue.CrewNetworkTaskQueueWrapper;
+import mx.itesm.logistics.crew_tracking.task.CreateLocationTask;
 import mx.itesm.logistics.crew_tracking.util.CrewAppComponent;
 
 public class LocationManagerService extends DaggerIntentService implements ConnectionCallbacks, OnConnectionFailedListener, LocationListener {
@@ -56,14 +54,14 @@ public class LocationManagerService extends DaggerIntentService implements Conne
 
     public static final String ACTION_LOCATION = "mx.itesm.cartokm2.ACTION_LOCATION";
 
-    private static final int LOCATION_REQUEST_INTERVAL_ACTIVE = 0;
-    private static final int LOCATION_REQUEST_MAX_INTERVAL_ACTIVE = 0;
+    private static final int LOCATION_REQUEST_INTERVAL_ACTIVE = 5000;
+    private static final int LOCATION_REQUEST_MAX_INTERVAL_ACTIVE = 5000;
 
     @Inject
     protected Bus mBus;
 
     @Inject
-    protected APIFetch mAPIFetch;
+    protected CrewNetworkTaskQueueWrapper mNetworkTaskQueueWrapper;
 
     protected GoogleApiClient mGoogleApiClient;
     protected edu.mit.lastmite.insight_library.model.Location mLastLocation;
@@ -125,12 +123,12 @@ public class LocationManagerService extends DaggerIntentService implements Conne
         //    stopSelf();
         //}
         boolean isFirstLocation = mLastLocation == null;
-        edu.mit.lastmite.insight_library.model.Location aggregateLocation = new edu.mit.lastmite.insight_library.model.Location(location);
+        CrewLocation aggregateLocation = new CrewLocation(location);
         //aggregateLocation.setRouteId(route.getId());
         initLocation(aggregateLocation);
         if (!isFirstLocation) {
-            //saveLocation(aggregateLocation);
             mBus.post(aggregateLocation);
+            saveLocation(aggregateLocation);
         }
         //cartoLocation.setVehicleId(Lab.get(this).getVehicle().getId());
     }
@@ -156,41 +154,24 @@ public class LocationManagerService extends DaggerIntentService implements Conne
         mLastLocation = location;
     }
 
-    protected void saveLocation(final edu.mit.lastmite.insight_library.model.Location location) {
-        Log.d("LOCATION", location.buildParams().toString());
-        mAPIFetch.post("traces/postTrace", location.buildParams(), new APIResponseHandler(this, null, false) {
-            @Override
-            public void onSuccess(int statusCode, Header[] headers, JSONObject response) {
-                super.onSuccess(statusCode, headers, response);
-            }
-
-            @Override
-            public void onFinish(boolean success) {
-            }
-        });
+    protected void saveLocation(CrewLocation location) {
+        CreateLocationTask task = new CreateLocationTask(location);
+        mNetworkTaskQueueWrapper.changeToLastOrNewQueue();
+        mNetworkTaskQueueWrapper.addTask(task);
     }
 
-    /**
-     *
-     */
     protected void startLocationUpdates() {
         if (mGoogleApiClient != null) {
             LocationServices.FusedLocationApi.requestLocationUpdates(mGoogleApiClient, createLocationRequest(), this);
         }
     }
 
-    /**
-     *
-     */
     protected void stopLocationUpdates() {
         if (mGoogleApiClient != null) {
             LocationServices.FusedLocationApi.removeLocationUpdates(mGoogleApiClient, this);
         }
     }
 
-    /**
-     *
-     */
     protected LocationRequest createLocationRequest() {
         LocationRequest locationRequest = new LocationRequest();
         int interval = LOCATION_REQUEST_INTERVAL_ACTIVE;
@@ -202,9 +183,6 @@ public class LocationManagerService extends DaggerIntentService implements Conne
         return locationRequest;
     }
 
-    /**
-     *
-     */
     private void buildGoogleApiClient() {
         mGoogleApiClient = new GoogleApiClient.Builder(this)
                 .addConnectionCallbacks(this)

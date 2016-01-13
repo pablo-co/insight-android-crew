@@ -3,6 +3,7 @@ package mx.itesm.logistics.crew_tracking;
 
 import edu.mit.lastmite.insight_library.BaseLibrary;
 import edu.mit.lastmite.insight_library.util.AppModule;
+import mx.itesm.logistics.crew_tracking.util.CrewAppModule;
 import mx.itesm.logistics.crew_tracking.util.DaggerCrewAppComponent;
 
 public class CrewTrackingApplication extends BaseLibrary {
@@ -11,6 +12,7 @@ public class CrewTrackingApplication extends BaseLibrary {
     protected void createComponent() {
         mComponent = DaggerCrewAppComponent.builder()
                 .appModule(new AppModule(this))
+                .crewAppModule(new CrewAppModule(this))
                 .build();
         mComponent.inject(this);
     }

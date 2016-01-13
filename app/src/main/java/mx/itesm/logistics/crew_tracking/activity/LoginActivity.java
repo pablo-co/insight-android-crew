@@ -28,11 +28,14 @@ package mx.itesm.logistics.crew_tracking.activity;
 import android.content.Intent;
 import android.os.Bundle;
 import android.support.v4.app.Fragment;
-import android.support.v7.widget.Toolbar;
 
+import javax.inject.Inject;
+
+import edu.mit.lastmite.insight_library.activity.SingleFragmentActivity;
 import edu.mit.lastmite.insight_library.communication.TargetListener;
-import mx.itesm.logistics.crew_tracking.R;
+import edu.mit.lastmite.insight_library.util.ApplicationComponent;
 import mx.itesm.logistics.crew_tracking.fragment.LoginFragment;
+import mx.itesm.logistics.crew_tracking.util.CrewAppComponent;
 import mx.itesm.logistics.crew_tracking.util.Lab;
 
 public class LoginActivity extends SingleFragmentActivity implements TargetListener {
@@ -40,6 +43,9 @@ public class LoginActivity extends SingleFragmentActivity implements TargetListe
     public static final String EXTRA_USER = "mx.itesm.cartokm2.extra_user";
 
     public static final int REQUEST_LOGIN = 0;
+
+    @Inject
+    protected Lab mLab;
 
     @Override
     protected Fragment createFragment() {
@@ -49,15 +55,14 @@ public class LoginActivity extends SingleFragmentActivity implements TargetListe
     }
 
     @Override
+    public void injectActivity(ApplicationComponent component) {
+        ((CrewAppComponent) component).inject(this);
+    }
+
+    @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
-        setSupportActionBar(toolbar);
-        getSupportActionBar().setDisplayHomeAsUpEnabled(true);
-        getSupportActionBar().setDisplayShowHomeEnabled(true);
-        getSupportActionBar().setHomeButtonEnabled(true);
-
-        if (!Lab.get(this).getUser().isEmpty()) {
+        if (!mLab.getUser().isEmpty()) {
             launchMainActivity();
         }
     }

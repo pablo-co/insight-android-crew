@@ -32,109 +32,44 @@ import android.content.SharedPreferences;
 import android.os.Bundle;
 import android.preference.PreferenceManager;
 import android.support.v4.app.Fragment;
-import android.support.v7.widget.Toolbar;
 import android.widget.Toast;
 
-import edu.mit.lastmite.insight_library.communication.TargetListener;
+import javax.inject.Inject;
+
+import edu.mit.lastmite.insight_library.activity.SingleFragmentActivity;
 import edu.mit.lastmite.insight_library.model.Location;
-import edu.mit.lastmite.insight_library.model.Vehicle;
+import edu.mit.lastmite.insight_library.util.ApplicationComponent;
 import edu.mit.lastmite.insight_library.util.Helper;
 import mx.itesm.logistics.crew_tracking.R;
-import mx.itesm.logistics.crew_tracking.fragment.ShopListFragment;
-import mx.itesm.logistics.crew_tracking.fragment.StopPeriodFragment;
 import mx.itesm.logistics.crew_tracking.fragment.TrackFragment;
-import mx.itesm.logistics.crew_tracking.fragment.VehicleListFragment;
 import mx.itesm.logistics.crew_tracking.receiver.LocationReceiver;
 import mx.itesm.logistics.crew_tracking.service.LocationManagerService;
+import mx.itesm.logistics.crew_tracking.util.CrewAppComponent;
 
-public class MainActivity extends SingleFragmentActivity implements TargetListener {
+public class MainActivity extends SingleFragmentActivity {
 
-    public static final int REQUEST_TRACKS = 0;
-    public static final int REQUEST_PARKING = 1;
-    public static final int REQUEST_DELIVERING = 2;
-    public static final int REQUEST_SHOPS = 3;
-    public static final int REQUEST_VEHICLES = 4;
+    @Inject
+    protected Helper mHelper;
 
     @Override
     protected Fragment createFragment() {
-        TrackFragment fragment = new TrackFragment();
-        fragment.setTargetListener(this, REQUEST_TRACKS);
-        return fragment;
+        return  new TrackFragment();
     }
 
+    @Override
     protected int getLayoutResId() {
         return R.layout.activity_main;
+    }
+
+    @Override
+    public void injectActivity(ApplicationComponent component) {
+        ((CrewAppComponent) component).inject(this);
     }
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         overrideTransitions = false;
         super.onCreate(savedInstanceState);
-        Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
-        setSupportActionBar(toolbar);
-    }
-
-    @Override
-    public void onResult(int requestCode, int resultCode, final Intent data) {
-        if (resultCode != TargetListener.RESULT_OK) return;
-
-        switch (requestCode) {
-            case REQUEST_TRACKS:
-                Helper.get(this).inflateFragment(getSupportFragmentManager(), R.id.fragmentContainer, new Helper.FragmentCreator() {
-                    @Override
-                    public Fragment createFragment() {
-                        StopPeriodFragment fragment = StopPeriodFragment.newInstance(
-                                getString(R.string.parking_title),
-                                getString(R.string.parking_content),
-                                getString(R.string.parking_action),
-                                R.mipmap.bg_parking
-                        );
-                        fragment.setTargetListener(MainActivity.this, REQUEST_PARKING);
-                        return fragment;
-                    }
-                }, R.animator.no_animation, R.animator.no_animation);
-                break;
-            case REQUEST_PARKING:
-                Helper.get(this).inflateFragment(getSupportFragmentManager(), R.id.fragmentContainer, new Helper.FragmentCreator() {
-                    @Override
-                    public Fragment createFragment() {
-                        StopPeriodFragment fragment = StopPeriodFragment.newInstance(
-                                getString(R.string.delivering_title),
-                                getString(R.string.delivering_content),
-                                getString(R.string.delivering_action),
-                                R.mipmap.bg_delivering
-                        );
-                        fragment.setTargetListener(MainActivity.this, REQUEST_DELIVERING);
-                        return fragment;
-                    }
-                }, R.animator.no_animation, R.animator.no_animation);
-                break;
-            case REQUEST_DELIVERING:
-                Helper.get(this).inflateFragment(getSupportFragmentManager(), R.id.fragmentContainer, new Helper.FragmentCreator() {
-                    @Override
-                    public Fragment createFragment() {
-                        ShopListFragment fragment = new ShopListFragment();
-                        fragment.setTargetListener(MainActivity.this, REQUEST_SHOPS);
-                        return fragment;
-                    }
-                }, R.animator.no_animation, R.animator.no_animation);
-                break;
-            case REQUEST_SHOPS:
-                Helper.get(this).inflateFragment(getSupportFragmentManager(), R.id.fragmentContainer, new Helper.FragmentCreator() {
-                    @Override
-                    public Fragment createFragment() {
-                        TrackFragment fragment = new TrackFragment();
-                        fragment.setTargetListener(MainActivity.this, REQUEST_TRACKS);
-                        return fragment;
-                    }
-                }, R.animator.no_animation, R.animator.no_animation);
-                break;
-            case REQUEST_VEHICLES:
-                Vehicle vehicle = (Vehicle) data.getSerializableExtra(VehicleListFragment.EXTRA_VEHICLE);
-                //Lab.get(this).setVehicle(vehicle).saveVehicle();
-                startBackgroundServices();
-                break;
-        }
     }
 
     protected void startBackgroundServices() {

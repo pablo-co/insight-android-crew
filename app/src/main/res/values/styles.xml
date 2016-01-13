@@ -6,9 +6,8 @@
         <item name="colorPrimary">@color/colorPrimary</item>
         <item name="colorPrimaryDark">@color/colorPrimaryDark</item>
         <item name="colorAccent">@color/colorAccent</item>
-        <item name="android:windowIsTranslucent">true</item>
-        <item name="android:windowBackground">@android:color/transparent</item>
     </style>
+
     <style name="AppTheme.NoActionBar">
         <item name="windowActionBar">false</item>
         <item name="windowNoTitle">true</item>
@@ -63,6 +62,29 @@
         <item name="et_supportTextErrorColor">#FFFF0000</item>
         <item name="et_dividerErrorColor">#FFFF0000</item>
         <item name="et_supportMode">helper</item>
+    </style>
+
+    <style name="LinearProgressView">
+        <item name="pv_autostart">false</item>
+        <item name="pv_circular">false</item>
+        <item name="pv_progressStyle">@style/LinearProgressDrawable</item>
+        <item name="pv_progressMode">indeterminate</item>
+    </style>
+
+    <style name="DeterminateLinearProgressView" parent="LinearProgressView">
+        <item name="pv_progressStyle">@style/DeterminateLinearProgressDrawable</item>
+        <item name="pv_progressMode">determinate</item>
+    </style>
+
+    <style name="LinearProgressDrawable" parent="Material.Drawable.LinearProgress">
+        <item name="lpd_strokeColor">@color/colorPrimary</item>
+        <item name="lpd_strokeSecondaryColor">@android:color/transparent</item>
+    </style>
+
+
+    <style name="DeterminateLinearProgressDrawable" parent="Material.Drawable.LinearProgress.Determinate">
+        <item name="lpd_strokeColor">@color/colorPrimary</item>
+        <item name="lpd_strokeSecondaryColor">@color/colorPrimary</item>
     </style>
 
 </resources>

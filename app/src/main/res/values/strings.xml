@@ -1,18 +1,17 @@
 <resources>
-    <string name="app_name">CartoKM2</string>
+    <string name="app_name">Crew</string>
 
     <!-- Strings related to login -->
     <string name="prompt_email">Email</string>
-    <string name="prompt_password">Password (optional)</string>
-    <string name="action_sign_in">Sign in or register</string>
+    <string name="prompt_password">Password</string>
+    <string name="prompt_order_id">Order ID</string>
+    <string name="action_sign_in">Sign in</string>
     <string name="action_sign_in_short">Sign in</string>
     <string name="error_invalid_email">This email address is invalid</string>
     <string name="error_invalid_password">This password is too short</string>
     <string name="error_incorrect_password">This password is incorrect</string>
     <string name="error_field_required">This field is required</string>
-    <string name="permission_rationale">"Contacts permissions are needed for providing email
-        completions."
-    </string>
+    <string name="error_no_connectivity">It looks like you don\'t have internet connection</string>
 
     <string name="started">Started:</string>
     <string name="latitude">Latitude:</string>
@@ -28,11 +27,6 @@
     <!-- Loading -->
     <string name="loading_title">Loading...</string>
     <string name="loading_content">Loading...</string>
-
-    <string name="navigation_drawer_open">Open navigation drawer</string>
-    <string name="navigation_drawer_close">Close navigation drawer</string>
-
-    <string name="vehicle_identifier">Identificador</string>
 
     <!-- Actions -->
     <string name="action_register">Register</string>
@@ -51,6 +45,8 @@
     <string name="action_enter">Enter</string>
     <string name="action_skip">Skip</string>
     <string name="action_stop">Stop</string>
+    <string name="action_show_routes">Show routes</string>
+    <string name="action_ok">Ok</string>
 
     <!-- Tracking -->
     <string name="track_distance_placeholder">0.00 km</string>
@@ -70,7 +66,6 @@
     <string name="empty_shops">No shops</string>
 
     <!-- Delivery -->
-
     <string-array name="delivery_types_array">
         <item>Delivery</item>
         <item>Pickup</item>
@@ -84,4 +79,17 @@
 
     <!-- Errors -->
     <string name="error_logout">Error cerrando sesión.</string>
+
+    <!-- CStops listings -->
+    <string name="cstop_no_items">You don\'t have any recorded routes</string>
+    <string name="cstop_start_time">Track started at:</string>
+    <string name="cstop_end_time">Track ended at:</string>
+    <string name="cstop_list_title">Stored routes</string>
+
+    <!-- Vehicles -->
+    <string name="vehicle_list_title">Vehicles</string>
+
+    <!-- Notification -->
+    <string name="notification_queue_uploading">Uploading data to server</string>
+    <string name="notification_queue_finished">Finished uploading data to server</string>
 </resources>
