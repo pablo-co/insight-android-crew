@@ -32,10 +32,13 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ArrayAdapter;
 import android.widget.EditText;
+import android.widget.TextView;
 
 import com.dd.CircularProgressButton;
 import com.rey.material.widget.CheckBox;
 import com.rey.material.widget.Spinner;
+import com.squareup.otto.Bus;
+import com.squareup.otto.Subscribe;
 
 import org.apache.http.Header;
 import org.json.JSONObject;
@@ -49,14 +52,19 @@ import butterknife.ButterKnife;
 import butterknife.OnClick;
 import edu.mit.lastmite.insight_library.annotation.ServiceConstant;
 import edu.mit.lastmite.insight_library.communication.TargetListener;
+import edu.mit.lastmite.insight_library.event.TimerEvent;
 import edu.mit.lastmite.insight_library.fragment.FragmentResponder;
 import edu.mit.lastmite.insight_library.http.APIFetch;
 import edu.mit.lastmite.insight_library.http.APIResponseHandler;
 import edu.mit.lastmite.insight_library.model.Delivery;
 import edu.mit.lastmite.insight_library.model.Errorable;
 import edu.mit.lastmite.insight_library.model.Location;
+import edu.mit.lastmite.insight_library.util.ApplicationComponent;
 import edu.mit.lastmite.insight_library.util.ServiceUtils;
+import edu.mit.lastmite.insight_library.util.StringUtils;
 import mx.itesm.logistics.crew_tracking.R;
+import mx.itesm.logistics.crew_tracking.model.CDelivery;
+import mx.itesm.logistics.crew_tracking.util.CrewAppComponent;
 import mx.itesm.logistics.crew_tracking.util.Lab;
 
 public class DeliveryFormFragment extends FragmentResponder implements Errorable {
@@ -79,6 +87,9 @@ public class DeliveryFormFragment extends FragmentResponder implements Errorable
     @Inject
     protected APIFetch mAPIFetch;
 
+    @Inject
+    protected Bus mBus;
+
     @Bind(R.id.actionButton)
     protected CircularProgressButton mActionButton;
 
@@ -94,7 +105,15 @@ public class DeliveryFormFragment extends FragmentResponder implements Errorable
     @Bind(R.id.delivery_equipmentUsedCheckBox)
     protected CheckBox mEquipmentCheckBox;
 
-    protected Delivery mDelivery;
+    @Bind(R.id.delivery_servedCheckBox)
+    protected CheckBox mServedCheckBox;
+
+
+    @Bind(R.id.delivery_timeTextView)
+    protected TextView mTimeTextView;
+
+    protected long mSectionsSeconds = 0l;
+    protected CDelivery mDelivery;
     protected float mLatitude;
     protected float mLongitude;
 
@@ -109,11 +128,17 @@ public class DeliveryFormFragment extends FragmentResponder implements Errorable
     }
 
     @Override
+    public void injectFragment(ApplicationComponent component) {
+        ((CrewAppComponent) component).inject(this);
+    }
+
+    @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         mLatitude = getArguments().getFloat(EXTRA_LATITUDE);
         mLongitude = getArguments().getFloat(EXTRA_LONGITUDE);
-        mDelivery = new Delivery();
+        mDelivery = new CDelivery();
+        mDelivery.measureTime();
         mDelivery.setLatitude(Double.valueOf(mLatitude));
         mDelivery.setLongitude(Double.valueOf(mLongitude));
     }
@@ -150,14 +175,26 @@ public class DeliveryFormFragment extends FragmentResponder implements Errorable
         sendResult(TargetListener.RESULT_OK, mDelivery);
     }
 
+    @SuppressWarnings("UnusedDeclaration")
+    @Subscribe
+    public void onTimerEvent(TimerEvent event) {
+        mSectionsSeconds = event.getSectionSeconds();
+        mTimeTextView.setText(StringUtils.secondsToString(mSectionsSeconds));
+    }
+
     protected void clearErrors() {
     }
 
     protected void updateDelivery() {
         mDelivery.setEquipment(mEquipmentCheckBox.isChecked());
         mDelivery.setBeyondSegment(mBeyondSegmentCheckBox.isChecked());
-        mDelivery.setType(Integer.valueOf(mTypeSpinner.getSelectedItem().toString()));
-        mDelivery.setOrderId(Long.valueOf(mOrderIdEditText.getText().toString()));
+        mDelivery.setType(mTypeSpinner.getSelectedItemPosition() + 1);
+        mDelivery.setServed(mServedCheckBox.isChecked());
+        mDelivery.measureTime();
+        String orderId = mOrderIdEditText.getText().toString();
+        if (!orderId.isEmpty()) {
+            mDelivery.setOrderId(orderId);
+        }
     }
 
     private void sendResult(int resultCode, Delivery delivery) {
@@ -170,6 +207,4 @@ public class DeliveryFormFragment extends FragmentResponder implements Errorable
 
         getTargetListener().onResult(getRequestCode(), resultCode, intent);
     }
-
-
 }

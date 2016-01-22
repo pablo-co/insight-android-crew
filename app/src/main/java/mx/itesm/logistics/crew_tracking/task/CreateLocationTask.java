@@ -25,7 +25,6 @@ package mx.itesm.logistics.crew_tracking.task;
 import android.util.Log;
 
 import edu.mit.lastmite.insight_library.http.APIResponseHandler;
-import edu.mit.lastmite.insight_library.model.Location;
 import edu.mit.lastmite.insight_library.task.NetworkTask;
 import mx.itesm.logistics.crew_tracking.model.CrewLocation;
 import mx.itesm.logistics.crew_tracking.util.Preferences;
@@ -42,7 +41,6 @@ public class CreateLocationTask extends NetworkTask {
         mCallback = callback;
         updateLocation();
         saveLocation(mLocation.getLatitude(), mLocation.getLongitude());
-        Log.d("CLASD", mLocation.buildParams().toString());
         mAPIFetch.post("crewtraces/postCrewtrace", mLocation.buildParams(), new APIResponseHandler(mApplication, null, false) {
             @Override
             public void onFinish(boolean success) {
@@ -57,7 +55,12 @@ public class CreateLocationTask extends NetworkTask {
     }
 
     protected void updateLocation() {
+        mLocation.setRouteId(getRouteId());
         mLocation.setCStopId(getCStopId());
+    }
+
+    protected long getRouteId() {
+        return getLocalLong(Preferences.PREFERENCES_ROUTE_ID);
     }
 
     protected long getCStopId() {

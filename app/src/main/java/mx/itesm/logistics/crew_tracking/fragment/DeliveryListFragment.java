@@ -48,8 +48,9 @@ import edu.mit.lastmite.insight_library.util.ServiceUtils;
 import edu.mit.lastmite.insight_library.view.NestedListView;
 import mx.itesm.logistics.crew_tracking.R;
 import mx.itesm.logistics.crew_tracking.activity.DeliveryNewActivity;
+import mx.itesm.logistics.crew_tracking.model.CDelivery;
 import mx.itesm.logistics.crew_tracking.queue.CrewNetworkTaskQueueWrapper;
-import mx.itesm.logistics.crew_tracking.task.CreateDeliveryTask;
+import mx.itesm.logistics.crew_tracking.task.CreateCDeliveryTask;
 import mx.itesm.logistics.crew_tracking.util.CrewAppComponent;
 
 public class DeliveryListFragment extends FragmentResponder implements ListView.OnItemClickListener {
@@ -224,7 +225,7 @@ public class DeliveryListFragment extends FragmentResponder implements ListView.
         super.onActivityResult(requestCode, resultCode, data);
         switch (requestCode) {
             case REQUEST_NEW:
-                sendDelivery((Delivery) data.getSerializableExtra(DeliveryNewActivity.EXTRA_DELIVERY));
+                sendDelivery((CDelivery) data.getSerializableExtra(DeliveryNewActivity.EXTRA_DELIVERY));
                 if (mShop != null) {
                     mShops.add(mShop);
                     mNearby.remove(mShop);
@@ -247,9 +248,9 @@ public class DeliveryListFragment extends FragmentResponder implements ListView.
         launchNewDelivery();
     }
 
-    protected void sendDelivery(Delivery delivery) {
+    protected void sendDelivery(CDelivery delivery) {
         if (delivery != null) {
-            CreateDeliveryTask task = new CreateDeliveryTask(delivery);
+            CreateCDeliveryTask task = new CreateCDeliveryTask(delivery);
             mQueueWrapper.addTask(task);
         }
     }

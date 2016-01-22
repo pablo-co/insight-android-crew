@@ -43,7 +43,6 @@ public class CreateVisitTask extends NetworkTask {
     public void execute(Callback callback) {
         mCallback = callback;
         updateVisit();
-        Log.d("CSTOP", mVisit.buildParams().toString());
         mAPIFetch.post("visits/postInitialvisit", mVisit.buildParams(), new APIResponseHandler(mApplication, null, false) {
             @Override
             public void onSuccess(int statusCode, Header[] headers, JSONObject response) {

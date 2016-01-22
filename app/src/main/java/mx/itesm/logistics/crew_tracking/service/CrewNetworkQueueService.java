@@ -23,6 +23,6 @@ public class CrewNetworkQueueService extends NetworkQueueService {
      */
     @Override
     protected NetworkTaskQueue createQueue(String queueName) {
-        return NetworkTaskQueue.create(this, mGson, mBus, queueName);
+        return CrewNetworkTaskQueue.create(this, mGson, mBus, queueName);
     }
 }

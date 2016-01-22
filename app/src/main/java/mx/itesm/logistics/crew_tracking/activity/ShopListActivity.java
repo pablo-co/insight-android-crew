@@ -29,22 +29,38 @@ import android.app.Activity;
 import android.content.Intent;
 import android.support.v4.app.Fragment;
 
+import javax.inject.Inject;
+
 import edu.mit.lastmite.insight_library.activity.SingleFragmentActivity;
+import edu.mit.lastmite.insight_library.annotation.ServiceConstant;
 import edu.mit.lastmite.insight_library.communication.TargetListener;
 import edu.mit.lastmite.insight_library.util.ApplicationComponent;
+import edu.mit.lastmite.insight_library.util.ServiceUtils;
+import edu.mit.lastmite.insight_library.util.Storage;
 import mx.itesm.logistics.crew_tracking.fragment.ShopListFragment;
 import mx.itesm.logistics.crew_tracking.util.CrewAppComponent;
+import mx.itesm.logistics.crew_tracking.util.Preferences;
 
 
-public class ShopListActivity extends SingleFragmentActivity implements TargetListener {
-
-    public static final String EXTRA_SHOP = "com.gruporaido.tasker.extra_shop";
+public class ShopListActivity extends BaseActivity implements TargetListener {
+    @ServiceConstant
+    public static String EXTRA_SHOP;
 
     public static final int REQUEST_SHOP = 0;
 
+    static {
+        ServiceUtils.populateConstants(ShopListActivity.class);
+    }
+
+    @Inject
+    protected Storage mStorage;
+
     @Override
     protected Fragment createFragment() {
-        ShopListFragment fragment = new ShopListFragment();
+        ShopListFragment fragment = ShopListFragment.newInstance(
+                mStorage.getGlobalFloat(Preferences.PREFERENCES_LATITUDE),
+                mStorage.getGlobalFloat(Preferences.PREFERENCES_LONGITUDE)
+        );
         fragment.setTargetListener(this, REQUEST_SHOP);
         return fragment;
     }

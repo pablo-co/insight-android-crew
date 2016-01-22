@@ -1,128 +1,187 @@
 <?xml version="1.0" encoding="utf-8"?>
-<com.sothree.slidinguppanel.SlidingUpPanelLayout
+<FrameLayout
     xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:sothree="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent"
-    android:layout_height="match_parent"
-    android:gravity="bottom"
-    sothree:umanoPanelHeight="48dp"
-    sothree:umanoShadowHeight="4dp">
+    android:layout_height="match_parent">
 
-    <LinearLayout
+    <com.sothree.slidinguppanel.SlidingUpPanelLayout
+        android:id="@+id/track_slidingUpPanel"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        android:orientation="vertical">
-
-        <LinearLayout
-            android:id="@+id/track_vehicleLayout"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:background="@color/card"
-            android:orientation="horizontal"
-            android:padding="8dp">
-
-            <ImageView
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_gravity="center_vertical"
-                android:src="@mipmap/ic_action_cancel"/>
-
-            <com.rey.material.widget.TextView
-                android:id="@+id/track_vehicleTextView"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_gravity="center_vertical"
-                android:layout_marginLeft="24dp"
-                android:layout_weight="1"
-                android:textColor="@color/white"
-                android:textSize="18sp"/>
-
-        </LinearLayout>
+        android:gravity="bottom"
+        sothree:umanoPanelHeight="48dp"
+        sothree:umanoShadowHeight="4dp">
 
         <FrameLayout
             android:id="@+id/track_mapLayout"
             android:layout_width="match_parent"
             android:layout_height="match_parent"/>
 
-    </LinearLayout>
+        <FrameLayout
+            android:id="@+id/panelLayout"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:background="@color/colorPrimaryLight">
+
+            <LinearLayout
+                android:id="@+id/track_contentLayout"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="vertical">
+
+                <include
+                    layout="@layout/track_mode"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"/>
+
+                <include
+                    layout="@layout/track_status"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"/>
+
+                <include
+                    layout="@layout/track_start"
+                    android:layout_width="match_parent"
+                    android:layout_height="128dp"/>
+
+                <include
+                    layout="@layout/track_paused"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_gravity="center_horizontal"
+                    android:layout_marginBottom="24dp"
+                    android:layout_marginTop="24dp"/>
+
+                <include
+                    layout="@layout/track_vehicle"
+                    android:layout_width="match_parent"
+                    android:layout_height="128dp"/>
+
+                <include
+                    layout="@layout/track_waiting"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_gravity="center_horizontal"
+                    android:layout_marginBottom="24dp"
+                    android:layout_marginTop="24dp"/>
+
+                <include
+                    layout="@layout/track_stats"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"/>
+
+            </LinearLayout>
+
+        </FrameLayout>
+
+    </com.sothree.slidinguppanel.SlidingUpPanelLayout>
+
 
     <FrameLayout
         android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:background="@color/colorPrimaryLight">
+        android:layout_height="match_parent">
+
 
         <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:orientation="vertical">
+            android:layout_gravity="bottom"
+            android:baselineAligned="false"
+            android:orientation="horizontal">
 
-            <include
-                layout="@layout/track_status"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"/>
-
-            <include
-                layout="@layout/track_start"
-                android:layout_width="match_parent"
-                android:layout_height="128dp"/>
-
-            <include
-                layout="@layout/track_waiting"
-                android:layout_width="wrap_content"
+            <FrameLayout
+                android:id="@+id/track_deliveredLayout"
+                android:layout_width="0dp"
                 android:layout_height="wrap_content"
-                android:layout_gravity="center_horizontal"
-                android:layout_marginBottom="24dp"
-                android:layout_marginTop="24dp"/>
+                android:layout_weight="1">
 
-            <include
-                layout="@layout/track_stats"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"/>
-
-            <LinearLayout
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:orientation="horizontal">
-
-                <FrameLayout
-                    android:layout_width="0dp"
+                <include
+                    layout="@layout/track_delivering"
+                    android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:layout_weight="1">
+                    android:layout_gravity="bottom|center_horizontal"
+                    android:layout_margin="8dp"/>
 
-                    <include
-                        layout="@layout/track_delivering"
-                        android:layout_width="match_parent"
-                        android:layout_height="wrap_content"
-                        android:layout_gravity="center"
-                        android:layout_margin="8dp"/>
+            </FrameLayout>
 
-                </FrameLayout>
-
-                <FrameLayout
-                    android:layout_width="0dp"
-                    android:layout_height="wrap_content"
-                    android:layout_weight="1">
-
-                    <include
-                        layout="@layout/track_stop"
-                        android:layout_width="match_parent"
-                        android:layout_height="wrap_content"
-                        android:layout_gravity="center"
-                        android:layout_margin="8dp"/>
-
-                </FrameLayout>
-
-            </LinearLayout>
-
-            <include
-                layout="@layout/track_delivered"
-                android:layout_width="match_parent"
+            <FrameLayout
+                android:id="@+id/track_deliveringLayout"
+                android:layout_width="0dp"
                 android:layout_height="wrap_content"
-                android:layout_gravity="bottom|center_horizontal"
-                android:layout_margin="8dp"/>
+                android:layout_weight="1">
+
+                <include
+                    layout="@layout/track_visiting"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_gravity="bottom|center_horizontal"
+                    android:layout_margin="8dp"/>
+
+            </FrameLayout>
+
+            <FrameLayout
+                android:id="@+id/track_returningLayout"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1">
+
+                <include
+                    layout="@layout/track_returning"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_gravity="bottom|center_horizontal"
+                    android:layout_margin="8dp"/>
+
+            </FrameLayout>
+
+            <FrameLayout
+                android:id="@+id/track_loadingLayout"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1">
+
+                <include
+                    layout="@layout/track_loading"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_gravity="bottom|center_horizontal"
+                    android:layout_margin="8dp"/>
+
+            </FrameLayout>
+
+            <FrameLayout
+                android:id="@+id/track_boardingLayout"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1">
+
+                <include
+                    layout="@layout/track_boarding"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_gravity="bottom|center_horizontal"
+                    android:layout_margin="8dp"/>
+
+            </FrameLayout>
+
+            <FrameLayout
+                android:id="@+id/track_stopLayout"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1">
+
+                <include
+                    layout="@layout/track_stop"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_gravity="bottom|center_horizontal"
+                    android:layout_margin="8dp"/>
+
+            </FrameLayout>
 
         </LinearLayout>
 
     </FrameLayout>
 
-</com.sothree.slidinguppanel.SlidingUpPanelLayout>
+</FrameLayout>

@@ -22,15 +22,18 @@
 
 package mx.itesm.logistics.crew_tracking.task;
 
+import android.util.Log;
+
 import edu.mit.lastmite.insight_library.http.APIResponseHandler;
 import edu.mit.lastmite.insight_library.model.Delivery;
 import edu.mit.lastmite.insight_library.task.NetworkTask;
+import mx.itesm.logistics.crew_tracking.model.CDelivery;
 import mx.itesm.logistics.crew_tracking.util.Preferences;
 
-public class CreateDeliveryTask extends NetworkTask {
-    protected Delivery mDelivery;
+public class CreateCDeliveryTask extends NetworkTask {
+    protected CDelivery mDelivery;
 
-    public CreateDeliveryTask(Delivery delivery) {
+    public CreateCDeliveryTask(CDelivery delivery) {
         mDelivery = delivery;
     }
 
@@ -38,7 +41,8 @@ public class CreateDeliveryTask extends NetworkTask {
     public void execute(Callback callback) {
         mCallback = callback;
         updateDelivery();
-        mAPIFetch.post("deliveries/postDelivery", mDelivery.buildParams(), new APIResponseHandler(mApplication, null, false) {
+        Log.d("tag", mDelivery.buildParams().toString());
+        mAPIFetch.post("cdeliveries/postCdelivery", mDelivery.buildParams(), new APIResponseHandler(mApplication, null, false) {
             @Override
             public void onFinish(boolean success) {
                 activateCallback(success);
@@ -53,6 +57,11 @@ public class CreateDeliveryTask extends NetworkTask {
 
     protected void updateDelivery() {
         mDelivery.setRouteId(getRouteId());
+        mDelivery.setVisitId(getVisitId());
+    }
+
+    protected long getVisitId() {
+        return getLocalLong(Preferences.PREFERENCES_VISIT_ID);
     }
 
     protected long getRouteId() {

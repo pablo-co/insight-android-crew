@@ -7,23 +7,29 @@ import android.os.Bundle;
 import android.support.v4.app.Fragment;
 
 import edu.mit.lastmite.insight_library.activity.SingleFragmentActivity;
+import edu.mit.lastmite.insight_library.annotation.ServiceConstant;
 import edu.mit.lastmite.insight_library.communication.TargetListener;
 import edu.mit.lastmite.insight_library.model.Route;
 import edu.mit.lastmite.insight_library.model.Vehicle;
 import edu.mit.lastmite.insight_library.util.ApplicationComponent;
 import edu.mit.lastmite.insight_library.util.Helper;
+import edu.mit.lastmite.insight_library.util.ServiceUtils;
 import mx.itesm.logistics.crew_tracking.R;
 import mx.itesm.logistics.crew_tracking.fragment.DeliveryFormFragment;
 import mx.itesm.logistics.crew_tracking.fragment.RouteListFragment;
 import mx.itesm.logistics.crew_tracking.fragment.VehicleListFragment;
 import mx.itesm.logistics.crew_tracking.util.CrewAppComponent;
 
-public class RouteListActivity extends SingleFragmentActivity implements TargetListener {
-
-    public static final String EXTRA_ROUTE = "com.gruporaido.tasker.extra_route";
+public class RouteListActivity extends BaseActivity implements TargetListener {
+    @ServiceConstant
+    public static  String EXTRA_ROUTE;
 
     public static final int REQUEST_VEHICLE = 0;
     public static final int REQUEST_ROUTE = 1;
+
+    static {
+        ServiceUtils.populateConstants(RouteListActivity.class);
+    }
 
     @Override
     protected Fragment createFragment() {
@@ -63,7 +69,7 @@ public class RouteListActivity extends SingleFragmentActivity implements TargetL
                 }, R.animator.no_animation, R.animator.no_animation, true);
                 break;
             case REQUEST_ROUTE:
-                Route route = (Route) data.getSerializableExtra(RouteListActivity.EXTRA_ROUTE);
+                Route route = (Route) data.getSerializableExtra(RouteListFragment.EXTRA_ROUTE);
                 Intent intent = new Intent();
                 intent.putExtra(EXTRA_ROUTE, route);
                 setResult(Activity.RESULT_OK, intent);

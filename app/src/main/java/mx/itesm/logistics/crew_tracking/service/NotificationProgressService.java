@@ -41,13 +41,13 @@ public class NotificationProgressService extends DaggerIntentService {
     @Override
     protected void onHandleIntent(Intent intent) {
         Log.i(TAG, "Service starting!");
+        mBus.register(this);
     }
 
     @Override
     public int onStartCommand(Intent intent, int flags, int startId) {
         getQueueName(intent);
         buildNotification();
-        mBus.register(this);
         updateProgress(0.0f);
         return START_NOT_STICKY;
     }

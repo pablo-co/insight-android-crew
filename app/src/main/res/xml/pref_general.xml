@@ -1,0 +1,40 @@
+<PreferenceScreen xmlns:android="http://schemas.android.com/apk/res/android">
+
+    <ListPreference
+        android:defaultValue="5"
+        android:entries="@array/pref_gps_frequency_titles"
+        android:entryValues="@array/pref_gps_frequency_values"
+        android:key="gps_frequency"
+        android:negativeButtonText="@null"
+        android:positiveButtonText="@null"
+        android:title="@string/pref_title_gps_frequency"/>
+
+    <SwitchPreference
+        android:defaultValue="false"
+        android:key="gps_accelerometer"
+        android:title="@string/pref_title_gps_accelerometer"/>
+
+    <SwitchPreference
+        android:defaultValue="true"
+        android:key="show_labels"
+        android:title="@string/pref_title_show_labels"/>
+
+    <EditTextPreference
+        android:capitalize="none"
+        android:defaultValue="@string/base_url"
+        android:inputType="textCapWords"
+        android:key="base_url"
+        android:maxLines="1"
+        android:selectAllOnFocus="true"
+        android:singleLine="true"
+        android:title="@string/pref_title_base_url"/>
+
+    <mx.itesm.logistics.crew_tracking.preferences.LogoutDialogPreference
+        android:dialogIcon="@android:drawable/ic_dialog_alert"
+        android:title="@string/pref_title_logout"
+        android:summary="@string/pref_summary_logout"
+        android:dialogMessage="@string/pref_dialog_logout"
+        android:positiveButtonText="@string/action_ok"
+        android:negativeButtonText="@string/action_cancel"/>
+
+</PreferenceScreen>

@@ -40,6 +40,7 @@ import com.bumptech.glide.Glide;
 import com.squareup.otto.Bus;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.Iterator;
 
 import javax.inject.Inject;
@@ -62,16 +63,17 @@ import mx.itesm.logistics.crew_tracking.queue.CrewNetworkTaskQueueWrapper;
 import mx.itesm.logistics.crew_tracking.task.NetworkTaskWrapper;
 import mx.itesm.logistics.crew_tracking.util.CrewAppComponent;
 import mx.itesm.logistics.crew_tracking.util.Lab;
+import mx.itesm.logistics.crew_tracking.util.Preferences;
 
-public class CStopListFragment extends FragmentResponder implements ListView.OnItemClickListener {
+public class TripListFragment extends FragmentResponder implements ListView.OnItemClickListener {
 
-    public static final String TAG = "CStopListFragment";
+    public static final String TAG = "TripListFragment";
 
     @ServiceConstant
     public static String EXTRA_QUEUE_NAME;
 
     static {
-        ServiceUtils.populateConstants(CStopListFragment.class);
+        ServiceUtils.populateConstants(TripListFragment.class);
     }
 
     @Inject
@@ -81,8 +83,8 @@ public class CStopListFragment extends FragmentResponder implements ListView.OnI
     protected Lab mLab;
 
     protected User mUser;
-    protected CStopWrapperAdapter mCStopAdapter;
-    protected ArrayList<CStopWrapper> mCStopWrappers;
+    protected HashMapWrapperAdapter mAdapter;
+    protected ArrayList<HashMapWrapper> mWrappers;
 
     @Inject
     protected Helper mHelper;
@@ -105,16 +107,16 @@ public class CStopListFragment extends FragmentResponder implements ListView.OnI
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         mUser = mLab.getUser();
-        mCStopWrappers = new ArrayList<>();
-        mCStopAdapter = new CStopWrapperAdapter(mCStopWrappers);
+        mWrappers = new ArrayList<>();
+        mAdapter = new HashMapWrapperAdapter(mWrappers);
     }
 
     @Override
     public View onCreateView(LayoutInflater layoutInflater, ViewGroup parent, Bundle savedInstanceState) {
-        View view = layoutInflater.inflate(R.layout.fragment_cstop_list, parent, false);
+        View view = layoutInflater.inflate(R.layout.fragment_trip_list, parent, false);
         ButterKnife.bind(this, view);
 
-        mListView.setAdapter(mCStopAdapter);
+        mListView.setAdapter(mAdapter);
         mListView.setOnItemClickListener(this);
 
         loadCStops();
@@ -124,11 +126,11 @@ public class CStopListFragment extends FragmentResponder implements ListView.OnI
 
     @Override
     public void onItemClick(AdapterView adapterView, View view, int position, long id) {
-        sendResult(TargetListener.RESULT_OK, mCStopWrappers.get(position).getQueueName());
+        sendResult(TargetListener.RESULT_OK, mWrappers.get(position).getQueueName());
     }
 
     protected void loadCStops() {
-        mCStopWrappers.clear();
+        mWrappers.clear();
         ArrayList<String> queueNames = mQueueWrapper.getQueueNames();
         Iterator<String> iterator = queueNames.iterator();
         while (iterator.hasNext()) {
@@ -148,9 +150,16 @@ public class CStopListFragment extends FragmentResponder implements ListView.OnI
         }
 
         Object firstObject = objects.get(0);
-        if (isACStopObject(firstObject)) {
-            mCStopWrappers.add(new CStopWrapper((CStop) firstObject, queueName));
+        if (isAHashMap(firstObject)) {
+            mWrappers.add(new HashMapWrapper((HashMap) firstObject, queueName));
         }
+    }
+
+    protected boolean isAHashMap(Object object) {
+        if (object == null) {
+            return false;
+        }
+        return object.getClass() == HashMap.class;
     }
 
     protected boolean isACStopObject(Object object) {
@@ -162,7 +171,7 @@ public class CStopListFragment extends FragmentResponder implements ListView.OnI
 
     protected void showModelsLoaded() {
         mListView.setEmptyView(mEmptyView);
-        mCStopAdapter.notifyDataSetChanged();
+        mAdapter.notifyDataSetChanged();
     }
 
     protected void sendResult(int resultCode, String string) {
@@ -176,17 +185,17 @@ public class CStopListFragment extends FragmentResponder implements ListView.OnI
         getTargetListener().onResult(getRequestCode(), resultCode, intent);
     }
 
-    private class CStopWrapper {
-        private CStop mCStop;
+    private class HashMapWrapper {
+        private HashMap mHashMap;
         private String mQueueName;
 
-        CStopWrapper(CStop stop, String queueName) {
-            mCStop = stop;
+        HashMapWrapper(HashMap hashMap, String queueName) {
+            mHashMap = hashMap;
             mQueueName = queueName;
         }
 
-        public CStop getCStop() {
-            return mCStop;
+        public HashMap getHashMap() {
+            return mHashMap;
         }
 
         public String getQueueName() {
@@ -194,9 +203,9 @@ public class CStopListFragment extends FragmentResponder implements ListView.OnI
         }
     }
 
-    private class CStopWrapperAdapter extends ArrayAdapter<CStopWrapper> {
+    private class HashMapWrapperAdapter extends ArrayAdapter<HashMapWrapper> {
 
-        public CStopWrapperAdapter(ArrayList<CStopWrapper> cstops) {
+        public HashMapWrapperAdapter(ArrayList<HashMapWrapper> cstops) {
             super(getActivity(), 0, cstops);
         }
 
@@ -206,19 +215,21 @@ public class CStopListFragment extends FragmentResponder implements ListView.OnI
                 convertView = getActivity().getLayoutInflater().inflate(R.layout.list_item_cstop, null);
             }
 
-            CStopWrapper wrapper = getItem(position);
-            CStop cStop = wrapper.getCStop();
+            HashMapWrapper wrapper = getItem(position);
+            HashMap hashMap = wrapper.getHashMap();
 
+            Long startTime =((Double) hashMap.get(Preferences.PREFERENCES_START_TIME)).longValue();
             TextView startTimeTextView = (TextView) convertView.findViewById(R.id.item_cstop_startTimeTextView);
-            startTimeTextView.setText(mHelper.getDateStringFromTimestamp(cStop.getStartTime()));
+            startTimeTextView.setText(mHelper.getDateStringFromTimestamp(startTime));
 
+            Long endTime = ((Double) hashMap.get(Preferences.PREFERENCES_START_TIME)).longValue();
             TextView endTimeTextView = (TextView) convertView.findViewById(R.id.item_cstop_endTimeTextView);
-            endTimeTextView.setText(mHelper.getDateStringFromTimestamp(cStop.getEndTime()));
+            endTimeTextView.setText(mHelper.getDateStringFromTimestamp(endTime));
 
             CircleImageView positionCircleImageView = (CircleImageView) convertView.findViewById(R.id.item_cstop_locationCircleImageView);
 
             StaticGoogleMaps googleMaps = StaticGoogleMaps.builder()
-                    .addArgument("center", cStop.getLatitude() + "," + cStop.getLongitude())
+                    .addArgument("center", hashMap.get(Preferences.PREFERENCES_LATITUDE) + "," + hashMap.get(Preferences.PREFERENCES_LONGITUDE))
                     .addArgument("zoom", 15)
                     .addArgument("size", "200x200")
                     .addArgument("scale", 2)
@@ -231,5 +242,4 @@ public class CStopListFragment extends FragmentResponder implements ListView.OnI
             return convertView;
         }
     }
-
 }

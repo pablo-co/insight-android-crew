@@ -47,7 +47,7 @@
                 android:orientation="vertical">
 
                 <FrameLayout
-                    android:id="@+id/cstop_mapsLayout"
+                    android:id="@+id/trip_mapsLayout"
                     android:layout_width="match_parent"
                     android:layout_height="0dp"
                     android:layout_weight="1"/>
@@ -56,16 +56,8 @@
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:orientation="horizontal">
-
                     <com.rey.material.widget.Button
-                        android:id="@+id/cstop_routeButton"
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:text="Route"
-                        app:fab_backgroundColor="@color/colorAccent"/>
-
-                    <com.rey.material.widget.Button
-                        android:id="@+id/cstop_submitButton"
+                        android:id="@+id/trip_submitButton"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
                         android:text="Sync"

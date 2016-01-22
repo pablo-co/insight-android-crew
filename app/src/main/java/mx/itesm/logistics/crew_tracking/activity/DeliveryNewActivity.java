@@ -45,7 +45,7 @@ import mx.itesm.logistics.crew_tracking.util.Lab;
 import mx.itesm.logistics.crew_tracking.util.Preferences;
 
 
-public class DeliveryNewActivity extends SingleFragmentActivity implements TargetListener {
+public class DeliveryNewActivity extends BaseActivity implements TargetListener {
 
     @ServiceConstant
     public static String EXTRA_DELIVERY;

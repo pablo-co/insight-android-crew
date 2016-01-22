@@ -7,7 +7,7 @@ android {
 
     defaultConfig {
         applicationId "mx.itesm.logistics.crew_tracking"
-        minSdkVersion 15
+        minSdkVersion 16
         targetSdkVersion 23
         versionCode 1
         versionName "0.0.1"
@@ -39,11 +39,11 @@ dependencies {
     compile 'com.github.dmytrodanylyk.circular-progress-button:library:1.1.3'
     compile 'com.github.bumptech.glide:glide:3.6.1'
     compile 'com.sothree.slidinguppanel:library:3.2.1'
+    compile 'com.github.johnkil.android-progressfragment:progressfragment:1.4.+'
 
     /* Geolocation & Maps */
     compile 'com.google.android.gms:play-services-gcm:8.4.0'
     compile 'com.google.android.gms:play-services-location:8.4.0'
-
 
     /* Dependency injection*/
     compile 'com.google.dagger:dagger:2.0.2'

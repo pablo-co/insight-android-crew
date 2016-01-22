@@ -28,10 +28,16 @@ package mx.itesm.logistics.crew_tracking.util;
 import android.content.Context;
 import android.util.Log;
 
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Objects;
+
 import edu.mit.lastmite.insight_library.model.JSONSerializer;
+import edu.mit.lastmite.insight_library.model.JSONable;
 import edu.mit.lastmite.insight_library.model.Route;
 import edu.mit.lastmite.insight_library.model.User;
 import edu.mit.lastmite.insight_library.model.Vehicle;
+import mx.itesm.logistics.crew_tracking.model.VehicleType;
 
 // TODO change serializers and objets to ArrayList and key extraction
 public class Lab {
@@ -40,21 +46,24 @@ public class Lab {
     protected static final String USER_FILENAME = "user.json";
     protected static final String VEHICLE_FILENAME = "vehicle.json";
     protected static final String ROUTE_FILENAME = "route.json";
+    protected static final String VEHICLE_TYPES_FILENAME = "vehicle_types.json";
 
     protected static User mUser;
     protected static Vehicle mVehicle;
     protected static Route mRoute;
+    protected static ArrayList<VehicleType> mVehicleTypes;
 
     protected JSONSerializer mUserSerializer;
     protected JSONSerializer mVehicleSerializer;
     protected JSONSerializer mRouteSerializer;
+    protected JSONSerializer<VehicleType> mVehicleTypesSerializer;
 
     private Context mAppContext;
 
     public Lab(Context appContext) {
         mAppContext = appContext;
 
-        mUserSerializer = new JSONSerializer(appContext, USER_FILENAME);
+        mUserSerializer = new JSONSerializer<>(appContext, USER_FILENAME);
         try {
             mUser = (User) mUserSerializer.loadObject("edu.mit.lastmite.insight_library.model.User");
         } catch (Exception e) {
@@ -65,7 +74,7 @@ public class Lab {
             }
         }
 
-        mVehicleSerializer = new JSONSerializer(appContext, VEHICLE_FILENAME);
+        mVehicleSerializer = new JSONSerializer<>(appContext, VEHICLE_FILENAME);
         try {
             mVehicle = (Vehicle) mVehicleSerializer.loadObject("edu.mit.lastmite.insight_library.model.Vehicle");
         } catch (Exception e) {
@@ -76,7 +85,7 @@ public class Lab {
             }
         }
 
-        mRouteSerializer = new JSONSerializer(appContext, ROUTE_FILENAME);
+        mRouteSerializer = new JSONSerializer<>(appContext, ROUTE_FILENAME);
         try {
             mRoute = (Route) mRouteSerializer.loadObject("edu.mit.lastmite.insight_library.model.Route");
         } catch (Exception e) {
@@ -84,6 +93,17 @@ public class Lab {
         } finally {
             if (mRoute == null) {
                 mRoute = new Route();
+            }
+        }
+
+        mVehicleTypesSerializer = new JSONSerializer<>(appContext, VEHICLE_TYPES_FILENAME);
+        try {
+            mVehicleTypes = mVehicleTypesSerializer.loadArray("mx.itesm.logistics.crew_tracking.model.VehicleType");
+        } catch (Exception e) {
+            Log.e(TAG, "Error loading VehicleType: ", e);
+        } finally {
+            if (mVehicleTypes == null) {
+                mVehicleTypes = new ArrayList<>();
             }
         }
     }
@@ -171,6 +191,37 @@ public class Lab {
         try {
             mRouteSerializer.deleteObject();
             mRoute = new Route();
+            return true;
+        } catch (Exception e) {
+            e.printStackTrace();
+            return false;
+        }
+    }
+
+
+    public List<VehicleType> getVehicleTypes() {
+        return mVehicleTypes;
+    }
+
+    public Lab setVehicleTypes(List<VehicleType> vehicleTypes) {
+        mVehicleTypes = (ArrayList<VehicleType>) vehicleTypes;
+        return this;
+    }
+
+    public boolean saveVehicleTypes() {
+        try {
+            mVehicleTypesSerializer.saveArray(mVehicleTypes);
+            return true;
+        } catch (Exception e) {
+            e.printStackTrace();
+            return false;
+        }
+    }
+
+    public boolean deleteVehicleTypes() {
+        try {
+            mVehicleTypesSerializer.deleteObject();
+            mVehicleTypes = new ArrayList<>();
             return true;
         } catch (Exception e) {
             e.printStackTrace();

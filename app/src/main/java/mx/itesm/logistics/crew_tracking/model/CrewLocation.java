@@ -30,6 +30,7 @@ public class CrewLocation extends Location {
         object.put(JSON_SPEED, mSpeed);
         object.put(JSON_TIME, mTime);
         object.put(JSON_CSTOP_ID, mCStopId);
+        object.put(JSON_ROUTE_ID, mRouteId);
 
         RequestParams params = new RequestParams();
         params.put(JSON_WRAPPER, object);

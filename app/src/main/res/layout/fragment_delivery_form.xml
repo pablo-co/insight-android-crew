@@ -1,65 +1,95 @@
 <?xml version="1.0" encoding="utf-8"?>
-<LinearLayout
+<ScrollView
     xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
-    xmlns:pp="http://schemas.android.com/tools"
     android:layout_width="match_parent"
-    android:layout_height="match_parent"
-    android:orientation="vertical"
-    android:padding="16dp">
+    android:layout_height="match_parent">
 
-    <com.rey.material.widget.Spinner
-        android:id="@+id/delivery_typeSpinner"
-        style="@style/Material.Widget.Spinner"
+    <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:layout_marginTop="32dp"/>
+        android:orientation="vertical"
+        android:padding="16dp">
 
-    <android.support.design.widget.TextInputLayout
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:layout_marginTop="16dp">
+        <TextView
+            android:id="@+id/delivery_timeTextView"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_gravity="center_horizontal"
+            android:layout_marginTop="16dp"
+            android:text="00:00"
+            android:textSize="36sp"/>
 
-        <EditText
-            android:id="@+id/delivery_orderIdEditText"
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_gravity="center_horizontal"
+            android:layout_marginBottom="16dp"
+            android:layout_marginTop="8dp"
+            android:text="Delivery time"
+            android:textSize="14sp"/>
+
+        <com.rey.material.widget.Spinner
+            android:id="@+id/delivery_typeSpinner"
+            style="@style/Material.Widget.Spinner"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:hint="@string/prompt_order_id"
-            android:inputType="text"
-            android:maxLines="1"
-            android:singleLine="true"/>
+            android:layout_marginTop="32dp"/>
 
-    </android.support.design.widget.TextInputLayout>
+        <android.support.design.widget.TextInputLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="16dp">
 
-    <com.rey.material.widget.CheckBox
-        android:id="@+id/delivery_equipmentUsedCheckBox"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_marginTop="32dp"
-        android:gravity="center"
-        android:text="Equipment used?"
-        android:textSize="18dp"/>
+            <EditText
+                android:id="@+id/delivery_orderIdEditText"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:hint="@string/prompt_order_id"
+                android:inputType="text"
+                android:maxLines="1"
+                android:singleLine="true"/>
 
-    <com.rey.material.widget.CheckBox
-        android:id="@+id/delivery_beyondSegmentCheckBox"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_marginTop="32dp"
-        android:gravity="center"
-        android:text="Walked beyond segment?"
-        android:textSize="18dp"/>
+        </android.support.design.widget.TextInputLayout>
 
+        <com.rey.material.widget.CheckBox
+            android:id="@+id/delivery_equipmentUsedCheckBox"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="32dp"
+            android:gravity="center"
+            android:text="Equipment used?"
+            android:textSize="18dp"/>
 
-    <com.dd.CircularProgressButton
-        android:id="@+id/actionButton"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:layout_marginBottom="12dp"
-        android:layout_marginTop="32dp"
-        android:text="@string/action_next"
-        android:textColor="@color/white"
-        app:cpb_cornerRadius="2dp"
-        app:cpb_textIdle="@string/action_next"/>
+        <com.rey.material.widget.CheckBox
+            android:id="@+id/delivery_beyondSegmentCheckBox"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="32dp"
+            android:gravity="center"
+            android:text="Walked beyond segment?"
+            android:textSize="18dp"/>
 
+        <com.rey.material.widget.CheckBox
+            android:id="@+id/delivery_servedCheckBox"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="32dp"
+            android:gravity="center"
+            android:text="Served?"
+            android:textSize="18dp"/>
 
-</LinearLayout>
+        <com.dd.CircularProgressButton
+            android:id="@+id/actionButton"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginBottom="12dp"
+            android:layout_marginTop="32dp"
+            android:text="@string/action_next"
+            android:textColor="@color/white"
+            app:cpb_cornerRadius="2dp"
+            app:cpb_textIdle="@string/action_next"/>
+
+    </LinearLayout>
+
+</ScrollView>

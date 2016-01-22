@@ -66,6 +66,8 @@
 
         <service android:name=".service.CrewNetworkQueueService"/>
 
+        <service android:name="edu.mit.lastmite.insight_library.service.TimerService" />
+
         <activity
             android:name=".activity.MainActivity"
             android:configChanges="orientation"
@@ -87,7 +89,7 @@
             android:screenOrientation="portrait"/>
 
         <activity
-            android:name=".activity.CStopListActivity"
+            android:name=".activity.SyncListActivity"
             android:configChanges="orientation"
             android:screenOrientation="portrait"/>
 
@@ -95,6 +97,10 @@
             android:name=".activity.RouteListActivity"
             android:configChanges="orientation"
             android:screenOrientation="portrait"/>
+
+        <activity
+            android:name=".activity.SettingsActivity"
+            android:theme="@style/AppTheme"/>
 
     </application>
 

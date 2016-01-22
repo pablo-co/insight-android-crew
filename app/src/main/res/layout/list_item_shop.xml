@@ -1,17 +1,18 @@
 <?xml version="1.0" encoding="utf-8"?>
-
 <LinearLayout
     xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
+    android:descendantFocusability="blocksDescendants"
     android:orientation="horizontal"
     android:padding="16dp">
 
     <LinearLayout
         android:layout_width="68dp"
         android:layout_height="wrap_content"
-        android:layout_marginLeft="8dp"
         android:layout_gravity="center_vertical"
+        android:layout_marginLeft="8dp"
         android:gravity="center_vertical"
         android:orientation="vertical">
 
@@ -31,6 +32,7 @@
             android:text="kilometers"
             android:textColor="@color/normal"
             android:textSize="14sp"/>
+
     </LinearLayout>
 
     <LinearLayout
@@ -60,5 +62,13 @@
 
     </LinearLayout>
 
+    <android.support.design.widget.FloatingActionButton
+        android:id="@+id/item_shop_iconView"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_gravity="center_vertical"
+        android:src="@mipmap/ic_package_down"
+        app:backgroundTint="@color/accent"
+        app:fabSize="mini"/>
 
 </LinearLayout>

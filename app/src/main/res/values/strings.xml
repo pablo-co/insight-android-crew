@@ -51,6 +51,7 @@
     <!-- Tracking -->
     <string name="track_distance_placeholder">0.00 km</string>
     <string name="track_speed_placeholder">0.00 kph</string>
+    <string name="mode_pedestrian">Pedestrian</string>
 
     <!-- Parking -->
     <string name="parking_title">Parking</string>
@@ -76,6 +77,31 @@
         <item>Products</item>
         <item>Parcel</item>
     </string-array>
+
+    <!-- States -->
+    <string name="state_idle">Idle</string>
+    <string name="state_starting">Waiting to start stip</string>
+    <string name="state_paused">Tracking paused</string>
+    <string name="state_loading">Loading cargo</string>
+    <string name="state_waiting">Waiting for location</string>
+    <string name="state_tracking">Tracking route</string>
+    <string name="state_transshipping">Transhipping</string>
+    <string name="state_parking">Searching for parking</string>
+    <string name="state_delivering">Delivering</string>
+    <string name="state_returning">Returning to truck</string>
+
+    <!-- State actions -->
+    <string name="state_idle_action">Idle</string>
+    <string name="state_starting_action">Start trip</string>
+    <string name="state_paused_action">Pause</string>
+    <string name="state_loading_action">Unloading cargo</string>
+    <string name="state_waiting_action">Waiting for location</string>
+    <string name="state_tracking_action">Getting on the truck</string>
+    <string name="state_transshipping_action">In Transship point</string>
+    <string name="state_parking_action">Searching for parking</string>
+    <string name="state_visiting_action">Walking to delivery</string>
+    <string name="state_delivering_action">Delivering</string>
+    <string name="state_returning_action">Returning to truck</string>
 
     <!-- Errors -->
     <string name="error_logout">Error cerrando sesión.</string>

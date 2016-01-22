@@ -25,5 +25,5 @@
     <string name="secret_keys">secret_keys</string>
     <string name="google_maps_key">AIzaSyB4ovqiH-zILShkiJOEIdx5OUYFhopxA0I</string>
     <string name="location_enabled">locations_enabled</string>
-    <string name="domain">bigdata.csf.itesm.mx/cartokm2-v2</string>
+    <string name="base_url">bigdata.csf.itesm.mx/cartokm2-v2</string>
 </resources>

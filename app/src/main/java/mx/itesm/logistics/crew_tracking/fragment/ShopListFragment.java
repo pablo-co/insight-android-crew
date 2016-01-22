@@ -30,8 +30,10 @@ import android.app.Activity;
 import android.content.Intent;
 import android.os.Bundle;
 import android.os.Parcelable;
+import android.support.design.widget.FloatingActionButton;
 import android.support.design.widget.Snackbar;
 import android.support.v4.app.Fragment;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.MenuInflater;
@@ -61,6 +63,7 @@ import butterknife.ButterKnife;
 import butterknife.OnClick;
 import edu.mit.lastmite.insight_library.annotation.ServiceConstant;
 import edu.mit.lastmite.insight_library.communication.TargetListener;
+import edu.mit.lastmite.insight_library.event.ClearSectionTimerEvent;
 import edu.mit.lastmite.insight_library.fragment.FragmentResponder;
 import edu.mit.lastmite.insight_library.fragment.InsightMapsFragment;
 import edu.mit.lastmite.insight_library.http.APIFetch;
@@ -73,9 +76,10 @@ import edu.mit.lastmite.insight_library.util.ServiceUtils;
 import edu.mit.lastmite.insight_library.view.NestedListView;
 import mx.itesm.logistics.crew_tracking.R;
 import mx.itesm.logistics.crew_tracking.activity.DeliveryNewActivity;
-import edu.mit.lastmite.insight_library.queue.NetworkTaskQueueWrapper;
+import mx.itesm.logistics.crew_tracking.model.CDelivery;
+import mx.itesm.logistics.crew_tracking.model.CShop;
 import mx.itesm.logistics.crew_tracking.queue.CrewNetworkTaskQueueWrapper;
-import mx.itesm.logistics.crew_tracking.task.CreateDeliveryTask;
+import mx.itesm.logistics.crew_tracking.task.CreateCDeliveryTask;
 import mx.itesm.logistics.crew_tracking.util.CrewAppComponent;
 
 public class ShopListFragment extends FragmentResponder implements ListView.OnItemClickListener {
@@ -84,6 +88,13 @@ public class ShopListFragment extends FragmentResponder implements ListView.OnIt
 
     @ServiceConstant
     public static String EXTRA_CARD;
+
+    @ServiceConstant
+    public static String EXTRA_LATITUDE;
+
+    @ServiceConstant
+    public static String EXTRA_LONGITUDE;
+
 
     static {
         ServiceUtils.populateConstants(ShopListFragment.class);
@@ -123,6 +134,8 @@ public class ShopListFragment extends FragmentResponder implements ListView.OnIt
     protected Shop mShop;
     protected ArrayList<Shop> mShops;
     protected ShopAdapter mShopAdapter;
+    protected double mLatitude;
+    protected double mLongitude;
 
     @Bind(R.id.shopsListView)
     protected NestedListView mShopsListView;
@@ -153,6 +166,16 @@ public class ShopListFragment extends FragmentResponder implements ListView.OnIt
     @Bind(R.id.list_shop_mapLayout)
     protected FrameLayout mMapLayout;
 
+    public static ShopListFragment newInstance(float latitude, float longitude) {
+        Bundle arguments = new Bundle();
+        arguments.putDouble(EXTRA_LATITUDE, latitude);
+        arguments.putDouble(EXTRA_LONGITUDE, longitude);
+
+        ShopListFragment fragment = new ShopListFragment();
+        fragment.setArguments(arguments);
+        return fragment;
+    }
+
     /**
      * Map
      **/
@@ -170,10 +193,13 @@ public class ShopListFragment extends FragmentResponder implements ListView.OnIt
         setHasOptionsMenu(true);
 
         mShops = new ArrayList<>();
-        mShopAdapter = new ShopAdapter(mShops);
+        mShopAdapter = new ShopAdapter(mShops, false);
 
         mNearby = new ArrayList<>();
-        mNearbyAdapter = new ShopAdapter(mNearby);
+        mNearbyAdapter = new ShopAdapter(mNearby, true);
+
+        mLatitude = getArguments().getDouble(EXTRA_LATITUDE);
+        mLongitude = getArguments().getDouble(EXTRA_LONGITUDE);
 
         mBus.register(this);
     }
@@ -192,6 +218,7 @@ public class ShopListFragment extends FragmentResponder implements ListView.OnIt
 
         checkForConnectivity(view);
         loadShops();
+        restartTimer();
 
         return view;
     }
@@ -214,7 +241,7 @@ public class ShopListFragment extends FragmentResponder implements ListView.OnIt
                 adjustLayoutPositioning();
             }
         });
-
+        restartTimer();
     }
 
     @Override
@@ -250,7 +277,8 @@ public class ShopListFragment extends FragmentResponder implements ListView.OnIt
         super.onActivityResult(requestCode, resultCode, data);
         switch (requestCode) {
             case REQUEST_NEW:
-                sendDelivery((Delivery) data.getSerializableExtra(DeliveryNewActivity.EXTRA_DELIVERY));
+                sendDelivery((CDelivery) data.getSerializableExtra(DeliveryNewActivity.EXTRA_DELIVERY));
+                restartTimer();
                 if (mShop != null) {
                     mShops.add(mShop);
                     mNearby.remove(mShop);
@@ -273,9 +301,13 @@ public class ShopListFragment extends FragmentResponder implements ListView.OnIt
         launchNewDelivery();
     }
 
-    protected void sendDelivery(Delivery delivery) {
+    protected void restartTimer() {
+        mBus.post(new ClearSectionTimerEvent());
+    }
+
+    protected void sendDelivery(CDelivery delivery) {
         if (delivery != null) {
-            CreateDeliveryTask task = new CreateDeliveryTask(delivery);
+            CreateCDeliveryTask task = new CreateCDeliveryTask(delivery);
             mQueueWrapper.addTask(task);
         }
     }
@@ -297,18 +329,20 @@ public class ShopListFragment extends FragmentResponder implements ListView.OnIt
         layoutParams.setMargins(0, 0, 0, height);
         mMapLayout.setLayoutParams(layoutParams);
 
-        FrameLayout.LayoutParams shopLayoutParams = (FrameLayout.LayoutParams) mShopListsLayout.getLayoutParams();
-        shopLayoutParams.setMargins(0, height, 0, 0);
-        mShopListsLayout.setLayoutParams(shopLayoutParams);
+        mShopListsLayout.setPadding(0,height, 0, 0);
     }
 
     protected void loadShops() {
         mShops.clear();
-        mAPIFetch.get("shops/getShops", null, new APIResponseHandler(getActivity(), getActivity().getSupportFragmentManager(), false) {
+        CShop shop = new CShop();
+        shop.setLatitude(mLatitude);
+        shop.setLongitude(mLongitude);
+        mAPIFetch.get("cshops/getCshops", shop.buildParams(), new APIResponseHandler(getActivity(), getActivity().getSupportFragmentManager(), false) {
             @Override
             public void onSuccess(int statusCode, Header[] headers, JSONObject response) {
                 try {
-                    JSONArray vehicles = response.getJSONArray(Shop.JSON_WRAPPER + "s");
+                    Log.d(TAG, response.toString());
+                    JSONArray vehicles = response.getJSONArray(CShop.JSON_WRAPPER + "s");
                     addShopsFromJSON(vehicles);
                 } catch (Exception e) {
                     e.printStackTrace();
@@ -368,8 +402,11 @@ public class ShopListFragment extends FragmentResponder implements ListView.OnIt
 
     private class ShopAdapter extends ArrayAdapter<Shop> {
 
-        public ShopAdapter(ArrayList<Shop> cards) {
+        protected boolean mShowIcon;
+
+        public ShopAdapter(ArrayList<Shop> cards, boolean showIcon) {
             super(getActivity(), 0, cards);
+            mShowIcon = showIcon;
         }
 
         @Override
@@ -388,6 +425,11 @@ public class ShopListFragment extends FragmentResponder implements ListView.OnIt
 
             TextView distanceTextView = (TextView) convertView.findViewById(R.id.item_shop_distanceTextView);
             distanceTextView.setText(mHelper.formatDouble(shop.getDistance() / 1000.0));
+
+            FloatingActionButton iconView = (FloatingActionButton) convertView.findViewById(R.id.item_shop_iconView);
+            if (!mShowIcon) {
+                iconView.setVisibility(View.GONE);
+            }
 
             return convertView;
         }

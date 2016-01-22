@@ -34,18 +34,18 @@ import edu.mit.lastmite.insight_library.communication.TargetListener;
 import edu.mit.lastmite.insight_library.util.ApplicationComponent;
 import edu.mit.lastmite.insight_library.util.Helper;
 import mx.itesm.logistics.crew_tracking.R;
-import mx.itesm.logistics.crew_tracking.fragment.CStopListFragment;
-import mx.itesm.logistics.crew_tracking.fragment.CStopShowFragment;
+import mx.itesm.logistics.crew_tracking.fragment.TripListFragment;
+import mx.itesm.logistics.crew_tracking.fragment.TripShowFragment;
 import mx.itesm.logistics.crew_tracking.util.CrewAppComponent;
 
 
-public class CStopListActivity extends SingleFragmentActivity implements TargetListener {
+public class SyncListActivity extends BaseActivity implements TargetListener {
 
     public static final int REQUEST_CSTOPS = 0;
 
     @Override
     protected Fragment createFragment() {
-        CStopListFragment fragment = new CStopListFragment();
+        TripListFragment fragment = new TripListFragment();
         fragment.setTargetListener(this, REQUEST_CSTOPS);
         return fragment;
     }
@@ -70,11 +70,11 @@ public class CStopListActivity extends SingleFragmentActivity implements TargetL
 
         switch (requestCode) {
             case REQUEST_CSTOPS:
-                final String queueName = data.getStringExtra(CStopListFragment.EXTRA_QUEUE_NAME);
+                final String queueName = data.getStringExtra(TripListFragment.EXTRA_QUEUE_NAME);
                 inflateFragment(R.id.fragmentContainer, new Helper.FragmentCreator() {
                     @Override
                     public Fragment createFragment() {
-                        return CStopShowFragment.newInstance(queueName);
+                        return TripShowFragment.newInstance(queueName);
                     }
                 }, R.animator.no_animation, R.animator.no_animation, true);
                 break;

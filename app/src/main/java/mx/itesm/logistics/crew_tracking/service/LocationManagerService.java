@@ -124,9 +124,9 @@ public class LocationManagerService extends DaggerIntentService implements Conne
         //}
         boolean isFirstLocation = mLastLocation == null;
         CrewLocation aggregateLocation = new CrewLocation(location);
-        //aggregateLocation.setRouteId(route.getId());
+        //aggregateLocation.setCStopId(route.getId());
         initLocation(aggregateLocation);
-        if (!isFirstLocation) {
+        if (!isFirstLocation && aggregateLocation != null) {
             mBus.post(aggregateLocation);
             saveLocation(aggregateLocation);
         }
@@ -156,7 +156,7 @@ public class LocationManagerService extends DaggerIntentService implements Conne
 
     protected void saveLocation(CrewLocation location) {
         CreateLocationTask task = new CreateLocationTask(location);
-        mNetworkTaskQueueWrapper.changeToLastOrNewQueue();
+        mNetworkTaskQueueWrapper.changeOrCreateIfNoQueue();
         mNetworkTaskQueueWrapper.addTask(task);
     }
 

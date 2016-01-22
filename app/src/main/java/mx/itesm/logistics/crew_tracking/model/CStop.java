@@ -132,7 +132,6 @@ public class CStop implements JSONable {
         return mId == null;
     }
 
-
     public void measureTime() {
         if (mStartTime == null) {
             mStartTime = System.currentTimeMillis();

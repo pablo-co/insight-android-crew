@@ -29,20 +29,35 @@ import android.app.Activity;
 import android.content.Intent;
 import android.os.Bundle;
 import android.support.v4.app.Fragment;
+import android.view.Menu;
+import android.view.MenuInflater;
+import android.view.MenuItem;
 
 import edu.mit.lastmite.insight_library.activity.SingleFragmentActivity;
+import edu.mit.lastmite.insight_library.annotation.ServiceConstant;
 import edu.mit.lastmite.insight_library.communication.TargetListener;
 import edu.mit.lastmite.insight_library.util.ApplicationComponent;
+import edu.mit.lastmite.insight_library.util.ServiceUtils;
 import mx.itesm.logistics.crew_tracking.R;
 import mx.itesm.logistics.crew_tracking.fragment.VehicleListFragment;
 import mx.itesm.logistics.crew_tracking.util.CrewAppComponent;
 
 
-public class VehicleListActivity extends SingleFragmentActivity implements TargetListener {
+public class VehicleListActivity extends BaseActivity implements TargetListener {
 
-    public static final String EXTRA_VEHICLE = "com.gruporaido.tasker.extra_delivery";
+    @ServiceConstant
+    public static String EXTRA_VEHICLE;
+
+    @ServiceConstant
+    public static String EXTRA_TYPE_ID;
 
     public static final int REQUEST_VEHICLE = 0;
+
+    static {
+        ServiceUtils.populateConstants(VehicleListActivity.class);
+    }
+
+    protected Integer mTypeId;
 
     @Override
     protected Fragment createFragment() {
@@ -66,6 +81,25 @@ public class VehicleListActivity extends SingleFragmentActivity implements Targe
     }
 
     @Override
+    public boolean onCreateOptionsMenu(Menu menu) {
+        MenuInflater inflater = getMenuInflater();
+        inflater.inflate(R.menu.menu_vehicle_list, menu);
+        return true;
+    }
+
+    @Override
+    public boolean onOptionsItemSelected(MenuItem menuItem) {
+        switch (menuItem.getItemId()) {
+            case R.id.vehicle_menu_item_skip:
+                setResult(Activity.RESULT_FIRST_USER);
+                finish();
+                return true;
+            default:
+                return super.onOptionsItemSelected(menuItem);
+        }
+    }
+
+    @Override
     public void onResult(int requestCode, int resultCode, final Intent data) {
         if (resultCode != TargetListener.RESULT_OK) return;
 
@@ -76,6 +110,13 @@ public class VehicleListActivity extends SingleFragmentActivity implements Targe
                 setResult(Activity.RESULT_OK, intent);
                 finish();
                 break;
+        }
+    }
+
+    private void processIntent() {
+        int typeId = getIntent().getIntExtra(EXTRA_TYPE_ID, -1);
+        if (typeId != -1) {
+            mTypeId = typeId;
         }
     }
 }

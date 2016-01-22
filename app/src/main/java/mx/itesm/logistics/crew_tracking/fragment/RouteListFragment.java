@@ -25,6 +25,7 @@ import javax.inject.Inject;
 
 import butterknife.Bind;
 import butterknife.ButterKnife;
+import edu.mit.lastmite.insight_library.annotation.ServiceConstant;
 import edu.mit.lastmite.insight_library.communication.TargetListener;
 import edu.mit.lastmite.insight_library.fragment.FragmentResponder;
 import edu.mit.lastmite.insight_library.http.APIFetch;
@@ -34,6 +35,7 @@ import edu.mit.lastmite.insight_library.model.Route;
 import edu.mit.lastmite.insight_library.model.Vehicle;
 import edu.mit.lastmite.insight_library.util.ApplicationComponent;
 import edu.mit.lastmite.insight_library.util.Helper;
+import edu.mit.lastmite.insight_library.util.ServiceUtils;
 import mx.itesm.logistics.crew_tracking.R;
 import mx.itesm.logistics.crew_tracking.util.CrewAppComponent;
 import mx.itesm.logistics.crew_tracking.util.Lab;
@@ -41,8 +43,15 @@ import mx.itesm.logistics.crew_tracking.util.Lab;
 public class RouteListFragment extends FragmentResponder implements ListView.OnItemClickListener {
     public static final String TAG = "RouteListFragment";
 
-    public static final String EXTRA_VEHICLE = "com.gruporaido.tasker.extra_vehicle";
-    public static final String EXTRA_ROUTE = "com.gruporaido.tasker.extra_route";
+    @ServiceConstant
+    public static String EXTRA_VEHICLE;
+
+    @ServiceConstant
+    public static String EXTRA_ROUTE;
+
+    static {
+        ServiceUtils.populateConstants(RouteListFragment.class);
+    }
 
     @Inject
     protected Lab mLab;

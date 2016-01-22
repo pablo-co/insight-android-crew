@@ -25,35 +25,55 @@
 
 package mx.itesm.logistics.crew_tracking.activity;
 
-import android.content.BroadcastReceiver;
-import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.os.Bundle;
 import android.preference.PreferenceManager;
 import android.support.v4.app.Fragment;
-import android.widget.Toast;
+
+import org.apache.http.Header;
+import org.json.JSONArray;
+import org.json.JSONException;
+import org.json.JSONObject;
+
+import java.util.ArrayList;
 
 import javax.inject.Inject;
 
 import edu.mit.lastmite.insight_library.activity.SingleFragmentActivity;
-import edu.mit.lastmite.insight_library.model.Location;
+import edu.mit.lastmite.insight_library.http.APIFetch;
+import edu.mit.lastmite.insight_library.http.APIResponseHandler;
 import edu.mit.lastmite.insight_library.util.ApplicationComponent;
 import edu.mit.lastmite.insight_library.util.Helper;
 import mx.itesm.logistics.crew_tracking.R;
-import mx.itesm.logistics.crew_tracking.fragment.TrackFragment;
-import mx.itesm.logistics.crew_tracking.receiver.LocationReceiver;
+import mx.itesm.logistics.crew_tracking.fragment.CrewTrackFragment;
+import mx.itesm.logistics.crew_tracking.fragment.LoadingFragment;
+import mx.itesm.logistics.crew_tracking.model.VehicleType;
 import mx.itesm.logistics.crew_tracking.service.LocationManagerService;
 import mx.itesm.logistics.crew_tracking.util.CrewAppComponent;
+import mx.itesm.logistics.crew_tracking.util.Lab;
 
 public class MainActivity extends SingleFragmentActivity {
 
     @Inject
     protected Helper mHelper;
 
+    @Inject
+    protected APIFetch mAPIFetch;
+
+    @Inject
+    protected Lab mLab;
+
+    protected boolean mIsLoading = false;
+
     @Override
     protected Fragment createFragment() {
-        return  new TrackFragment();
+        if (mLab.getVehicleTypes().isEmpty()) {
+            mIsLoading = true;
+            return new LoadingFragment();
+        } else {
+            return new CrewTrackFragment();
+        }
     }
 
     @Override
@@ -70,30 +90,46 @@ public class MainActivity extends SingleFragmentActivity {
     protected void onCreate(Bundle savedInstanceState) {
         overrideTransitions = false;
         super.onCreate(savedInstanceState);
+        getVehicleTypes();
     }
 
-    protected void startBackgroundServices() {
-        SharedPreferences sharedPreferences = PreferenceManager.getDefaultSharedPreferences(getBaseContext());
-        sharedPreferences.edit().putBoolean(getString(R.string.location_enabled), true).apply();
-        Intent intent = new Intent(this, LocationManagerService.class);
-        startService(intent);
+    protected void getVehicleTypes() {
+        mAPIFetch.get("typevehicles/getTypes", null, new APIResponseHandler(this, getSupportFragmentManager(), false) {
+            @Override
+            public void onSuccess(int statusCode, Header[] headers, JSONObject response) {
+                try {
+                    JSONArray types = response.getJSONArray(VehicleType.JSON_WRAPPER + "s");
+                    addVehicleTypesFromJSON(types);
+                } catch (JSONException e) {
+                    e.printStackTrace();
+                }
+                super.onSuccess(statusCode, headers, response);
+            }
+        });
     }
 
-    protected void stopBackgroundServices() {
-        Intent destroyIntent = new Intent(this, LocationManagerService.class);
-        stopService(destroyIntent);
-    }
-
-    private BroadcastReceiver mLocationReceiver = new LocationReceiver() {
-        @Override
-        protected void onLocationReceived(Context context, Location loc) {
+    protected void addVehicleTypesFromJSON(JSONArray json) {
+        ArrayList<VehicleType> vehicleTypes = new ArrayList<>();
+        try {
+            for (int i = 0; i < json.length(); ++i) {
+                VehicleType vehicleType = new VehicleType(json.getJSONObject(i));
+                vehicleTypes.add(vehicleType);
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
         }
+        mLab.setVehicleTypes(vehicleTypes).saveVehicleTypes();
+        inflateTrackFragment();
+    }
 
-        @Override
-        protected void onProviderEnabledChanged(boolean enabled) {
-            int toastText = enabled ? R.string.gps_enabled : R.string.gps_disabled;
-            Toast.makeText(MainActivity.this, toastText, Toast.LENGTH_LONG).show();
+    protected void inflateTrackFragment() {
+        if (mIsLoading) {
+            inflateFragment(R.id.fragmentContainer, new Helper.FragmentCreator() {
+                @Override
+                public Fragment createFragment() {
+                    return new CrewTrackFragment();
+                }
+            }, R.animator.no_animation, R.animator.no_animation);
         }
-    };
-
+    }
 }

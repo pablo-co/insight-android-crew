@@ -33,6 +33,7 @@ import edu.mit.lastmite.insight_library.fragment.BaseFragment;
 import edu.mit.lastmite.insight_library.fragment.InsightMapsFragment;
 import edu.mit.lastmite.insight_library.model.Location;
 import edu.mit.lastmite.insight_library.model.Route;
+import edu.mit.lastmite.insight_library.model.Vehicle;
 import edu.mit.lastmite.insight_library.model.Visit;
 import edu.mit.lastmite.insight_library.queue.NetworkTaskQueue;
 import edu.mit.lastmite.insight_library.util.ApplicationComponent;
@@ -41,7 +42,7 @@ import edu.mit.lastmite.insight_library.util.ServiceUtils;
 import edu.mit.lastmite.insight_library.util.Storage;
 import mx.itesm.logistics.crew_tracking.R;
 import mx.itesm.logistics.crew_tracking.activity.RouteListActivity;
-import edu.mit.lastmite.insight_library.queue.NetworkTaskQueueWrapper;
+import mx.itesm.logistics.crew_tracking.activity.VehicleListActivity;
 import mx.itesm.logistics.crew_tracking.model.CrewLocation;
 import mx.itesm.logistics.crew_tracking.queue.CrewNetworkTaskQueueWrapper;
 import mx.itesm.logistics.crew_tracking.task.NetworkTaskWrapper;
@@ -68,14 +69,14 @@ import mx.itesm.logistics.crew_tracking.util.Preferences;
  */
 
 
-public class CStopShowFragment extends BaseFragment implements TargetListener {
-    private static final String TAG = "CStopShowFragment";
+public class TripShowFragment extends BaseFragment implements TargetListener {
+    private static final String TAG = "TripShowFragment";
 
     @ServiceConstant
     public static String EXTRA_QUEUE_NAME;
 
     static {
-        ServiceUtils.populateConstants(CStopShowFragment.class);
+        ServiceUtils.populateConstants(TripShowFragment.class);
     }
 
     public static final int REQUEST_LIST = 0;
@@ -93,21 +94,18 @@ public class CStopShowFragment extends BaseFragment implements TargetListener {
     @Bind(R.id.loadingProgressView)
     protected ProgressView mProgressView;
 
-    @Bind(R.id.cstop_routeButton)
-    protected Button mRouteButton;
-
-    @Bind(R.id.cstop_submitButton)
+    @Bind(R.id.trip_submitButton)
     protected Button mSubmitButton;
 
-    protected Route mRoute;
+    protected Vehicle mVehicle;
     protected String mQueueName;
     protected ArrayList<Visit> mVisits;
 
-    public static CStopShowFragment newInstance(String queueName) {
+    public static TripShowFragment newInstance(String queueName) {
         Bundle arguments = new Bundle();
         arguments.putString(EXTRA_QUEUE_NAME, queueName);
 
-        CStopShowFragment fragment = new CStopShowFragment();
+        TripShowFragment fragment = new TripShowFragment();
         fragment.setArguments(arguments);
         return fragment;
     }
@@ -128,10 +126,10 @@ public class CStopShowFragment extends BaseFragment implements TargetListener {
 
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup parent, Bundle savedInstanceState) {
-        View view = inflater.inflate(R.layout.fragment_cstop_show, parent, false);
+        View view = inflater.inflate(R.layout.fragment_trip_show, parent, false);
         ButterKnife.bind(this, view);
 
-        mHelper.inflateFragment(getActivity().getSupportFragmentManager(), R.id.cstop_mapsLayout, new Helper.FragmentCreator() {
+        mHelper.inflateFragment(getActivity().getSupportFragmentManager(), R.id.trip_mapsLayout, new Helper.FragmentCreator() {
             @Override
             public Fragment createFragment() {
                 return InsightMapsFragment.newInstance(
@@ -145,7 +143,7 @@ public class CStopShowFragment extends BaseFragment implements TargetListener {
             @Override
             public Fragment createFragment() {
                 VisitListFragment fragment = VisitListFragment.newInstance(mVisits);
-                fragment.setTargetListener(CStopShowFragment.this, REQUEST_LIST);
+                fragment.setTargetListener(TripShowFragment.this, REQUEST_LIST);
                 return fragment;
             }
         }, R.animator.slide_up_in, R.animator.slide_down_out);
@@ -159,7 +157,7 @@ public class CStopShowFragment extends BaseFragment implements TargetListener {
     @Override
     public void onCreateOptionsMenu(Menu menu, MenuInflater menuInflater) {
         super.onCreateOptionsMenu(menu, menuInflater);
-        menuInflater.inflate(R.menu.menu_cstop, menu);
+        menuInflater.inflate(R.menu.menu_trip, menu);
     }
 
     @Override
@@ -192,25 +190,16 @@ public class CStopShowFragment extends BaseFragment implements TargetListener {
         super.onActivityResult(requestCode, resultCode, data);
         switch (requestCode) {
             case REQUEST_VEHICLE:
-                mRoute = (Route) data.getSerializableExtra(RouteListActivity.EXTRA_ROUTE);
+                mVehicle = (Vehicle) data.getSerializableExtra(VehicleListActivity.EXTRA_VEHICLE);
+                startSync();
         }
     }
 
     @SuppressWarnings("UnusedDeclaration")
-    @OnClick(R.id.cstop_routeButton)
-    public void onRouteClicked() {
-        Intent intent = new Intent(getContext(), RouteListActivity.class);
-        startActivityForResult(intent, REQUEST_VEHICLE);
-    }
-
-    @SuppressWarnings("UnusedDeclaration")
-    @OnClick(R.id.cstop_submitButton)
+    @OnClick(R.id.trip_submitButton)
     public void onSubmitClicked() {
-        if (mRoute != null) {
-            showProgressView();
-            mStorage.putLocalLong(mQueueName, Preferences.PREFERENCES_ROUTE_ID, mRoute.getId());
-            mQueueWrapper.executeQueue(mQueueName);
-        }
+        Intent intent = new Intent(getContext(), VehicleListActivity.class);
+        startActivityForResult(intent, REQUEST_VEHICLE);
     }
 
     @SuppressWarnings("UnusedDeclaration")
@@ -227,6 +216,12 @@ public class CStopShowFragment extends BaseFragment implements TargetListener {
         if (event.getQueueName().equals(mQueueName)) {
             closeFragment();
         }
+    }
+
+    protected void startSync() {
+        showProgressView();
+        mStorage.putLocalLong(mQueueName, Preferences.PREFERENCES_VEHICLE_ID, mVehicle.getId());
+        mQueueWrapper.executeQueue(mQueueName);
     }
 
     protected ArrayList<LatLng> mapToLatLng(ArrayList<Location> locations) {
@@ -293,7 +288,7 @@ public class CStopShowFragment extends BaseFragment implements TargetListener {
     }
 
     protected boolean isAVisitObject(Object object) {
-        return  object != null && object.getClass() == Visit.class;
+        return object != null && object.getClass() == Visit.class;
     }
 
     protected boolean isALocationObject(Object object) {
@@ -301,7 +296,6 @@ public class CStopShowFragment extends BaseFragment implements TargetListener {
     }
 
     protected void showProgressView() {
-        mRouteButton.setVisibility(View.GONE);
         mSubmitButton.setVisibility(View.GONE);
     }
 
@@ -309,7 +303,7 @@ public class CStopShowFragment extends BaseFragment implements TargetListener {
         try {
 
             getFragmentManager().popBackStack();
-        } catch (IllegalStateException _) {
+        } catch (IllegalStateException e) {
         }
     }
 }

@@ -137,7 +137,7 @@ public class VehicleListFragment extends FragmentResponder implements ListView.O
     protected void loadVehicles() {
         mVehicles.clear();
         Log.e(TAG, mUser.buildParams().toString());
-        mAPIFetch.post("vehicles/postVehicles", mUser.buildParams(), new APIResponseHandler(getActivity(), getActivity().getSupportFragmentManager(), false) {
+        mAPIFetch.get("vehicles/getVehicles", mUser.buildParams(), new APIResponseHandler(getActivity(), getActivity().getSupportFragmentManager(), false) {
             @Override
             public void onSuccess(int statusCode, Header[] headers, JSONObject response) {
                 Log.e(TAG, response.toString());
@@ -202,7 +202,7 @@ public class VehicleListFragment extends FragmentResponder implements ListView.O
             Vehicle vehicle = getItem(position);
 
             TextView numberTextView = (TextView) convertView.findViewById(R.id.item_vehicle_identifierTextView);
-            numberTextView.setText(vehicle.getPlates());
+            numberTextView.setText(vehicle.getIdentifier());
 
             return convertView;
         }

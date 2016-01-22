@@ -9,6 +9,7 @@ import javax.inject.Singleton;
 
 import dagger.Module;
 import dagger.Provides;
+import edu.mit.lastmite.insight_library.util.Storage;
 import mx.itesm.logistics.crew_tracking.queue.CrewNetworkTaskQueue;
 import mx.itesm.logistics.crew_tracking.queue.CrewNetworkTaskQueueWrapper;
 
@@ -31,5 +32,11 @@ public class CrewAppModule {
     @Singleton
     CrewNetworkTaskQueueWrapper provideCrewNetworkTaskQueueWrapper(Application application, Gson gson, Bus bus) {
         return new CrewNetworkTaskQueueWrapper(application, gson, bus);
+    }
+
+    @Provides
+    @Singleton
+    Api provideApi(Application application, Lab lab, Storage storage) {
+        return new Api(application, lab, storage);
     }
 }
