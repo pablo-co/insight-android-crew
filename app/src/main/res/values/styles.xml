@@ -91,5 +91,4 @@
     <style name="SpinnerItem.DropDownItem" parent="@android:style/Widget.DropDownItem.Spinner">
         <item name="android:textColor">#FFFFFF</item>
     </style>
-
 </resources>

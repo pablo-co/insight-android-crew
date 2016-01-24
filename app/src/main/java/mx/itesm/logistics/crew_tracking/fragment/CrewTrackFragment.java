@@ -77,6 +77,7 @@ import edu.mit.lastmite.insight_library.task.QueueHeaderTask;
 import edu.mit.lastmite.insight_library.util.ApplicationComponent;
 import edu.mit.lastmite.insight_library.util.ColorTransformation;
 import edu.mit.lastmite.insight_library.util.Storage;
+import edu.mit.lastmite.insight_library.util.TextSpeaker;
 import mx.itesm.logistics.crew_tracking.R;
 import mx.itesm.logistics.crew_tracking.activity.SettingsActivity;
 import mx.itesm.logistics.crew_tracking.activity.ShopListActivity;
@@ -85,7 +86,7 @@ import mx.itesm.logistics.crew_tracking.activity.VehicleListActivity;
 import mx.itesm.logistics.crew_tracking.model.CStop;
 import mx.itesm.logistics.crew_tracking.model.Loading;
 import mx.itesm.logistics.crew_tracking.model.Return;
-import mx.itesm.logistics.crew_tracking.model.VehicleType;
+import edu.mit.lastmite.insight_library.model.VehicleType;
 import mx.itesm.logistics.crew_tracking.queue.CrewNetworkTaskQueueWrapper;
 import mx.itesm.logistics.crew_tracking.service.LocationManagerService;
 import mx.itesm.logistics.crew_tracking.task.CreateCStopTask;
@@ -140,6 +141,9 @@ public class CrewTrackFragment extends TrackFragment {
 
     @Inject
     protected Bus mBus;
+
+    @Inject
+    protected TextSpeaker mTextSpeaker;
 
     @Inject
     protected Storage mStorage;
@@ -351,6 +355,9 @@ public class CrewTrackFragment extends TrackFragment {
                 waitForLocation(new WaitForLocationCallback() {
                     @Override
                     public void onReceivedLocation(Location location) {
+                        mShouldSyncQueue = true;
+                        sendQueueHeader();
+                        sendStartRoute();
                         startTrackingPedestrian();
                     }
                 });
@@ -645,6 +652,7 @@ public class CrewTrackFragment extends TrackFragment {
 
         mRoute.setType(convertModeToType(mMode));
         mRoute.setVehicleId(mLab.getVehicle().getId());
+        mRoute.setCrewId(mUser.getId());
     }
 
     protected void resetStop() {
@@ -695,6 +703,42 @@ public class CrewTrackFragment extends TrackFragment {
         if (mState == TrackState.TRACKING || mLastState == TrackState.TRACKING) {
             getActivity().supportInvalidateOptionsMenu();
         }
+        if (mStorage.getSharedPreferences().getBoolean(Preferences.PREFERENCES_TEXT_TO_SPEECH, true)) {
+            speakState((TrackState) state);
+        }
+    }
+
+    protected void speakState(TrackState state) {
+        String text = "";
+        switch (state) {
+            case IDLE:
+                text = getString(R.string.state_idle_speak);
+                break;
+            case PAUSED:
+                text = getString(R.string.state_paused_speak);
+                break;
+            case LOADING:
+                text = getString(R.string.state_loading_speak);
+                break;
+            case RETURNING:
+                text = getString(R.string.state_returning_speak);
+                break;
+            case WAITING_LOCATION:
+                text = getString(R.string.state_waiting_speak);
+                break;
+            case VISITING:
+                text = getString(R.string.state_delivering_speak);
+                break;
+            case TRACKING:
+            case TRACKING_DELIVERY:
+            case TRACKING_PEDESTRIAN:
+                text = getString(R.string.state_tracking_speak);
+                break;
+            case DELIVERING:
+                text = getString(R.string.state_delivered_speak);
+                break;
+        }
+        mTextSpeaker.say(text);
     }
 
     protected void waitForLocation(WaitForLocationCallback callback) {
@@ -780,7 +824,6 @@ public class CrewTrackFragment extends TrackFragment {
         startTimer();
         resetSectionStats();
         startBackgroundServices();
-        sendQueueHeader();
 
         updatePanelShowingButtons();
         hideAllViews();
@@ -1205,7 +1248,6 @@ public class CrewTrackFragment extends TrackFragment {
 
         @Override
         public View getView(int position, View convertView, ViewGroup parent) {
-            Log.d("TAG", "getview");
             if (convertView == null) {
                 convertView = getActivity().getLayoutInflater().inflate(R.layout.spinner_item_type, null);
             }

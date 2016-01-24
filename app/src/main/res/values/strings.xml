@@ -103,6 +103,19 @@
     <string name="state_delivering_action">Delivering</string>
     <string name="state_returning_action">Returning to truck</string>
 
+    <!-- State speaking -->
+    <string name="state_idle_speak">Idle</string>
+    <string name="state_starting_speak">Waiting to start stip</string>
+    <string name="state_paused_speak">Tracking paused</string>
+    <string name="state_loading_speak">Loading cargo</string>
+    <string name="state_waiting_speak">Waiting for a GPS trace</string>
+    <string name="state_tracking_speak">Tracking trip</string>
+    <string name="state_transshipping_speak">Transhipping</string>
+    <string name="state_parking_speak">Searching for parking</string>
+    <string name="state_delivering_speak">Ended delivery</string>
+    <string name="state_delivered_speak">Starting delivery</string>
+    <string name="state_returning_speak">Returning to truck</string>
+
     <!-- Errors -->
     <string name="error_logout">Error cerrando sesión.</string>
 

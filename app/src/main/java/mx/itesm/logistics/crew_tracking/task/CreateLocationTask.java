@@ -41,6 +41,7 @@ public class CreateLocationTask extends NetworkTask {
         mCallback = callback;
         updateLocation();
         saveLocation(mLocation.getLatitude(), mLocation.getLongitude());
+        Log.d("TAS", mLocation.buildParams().toString());
         mAPIFetch.post("crewtraces/postCrewtrace", mLocation.buildParams(), new APIResponseHandler(mApplication, null, false) {
             @Override
             public void onFinish(boolean success) {

@@ -1,6 +1,8 @@
 package mx.itesm.logistics.crew_tracking.task;
 
 
+import android.util.Log;
+
 import org.apache.http.Header;
 import org.json.JSONObject;
 

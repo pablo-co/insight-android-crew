@@ -52,6 +52,8 @@ import edu.mit.lastmite.insight_library.model.Visit;
 import edu.mit.lastmite.insight_library.util.ApplicationComponent;
 import edu.mit.lastmite.insight_library.util.Helper;
 import edu.mit.lastmite.insight_library.util.StaticGoogleMaps;
+import edu.mit.lastmite.insight_library.util.StringUtils;
+import edu.mit.lastmite.insight_library.util.ViewUtils;
 import edu.mit.lastmite.insight_library.view.CircleImageView;
 import mx.itesm.logistics.crew_tracking.R;
 import mx.itesm.logistics.crew_tracking.util.CrewAppComponent;
@@ -129,11 +131,6 @@ public class VisitListFragment extends FragmentResponder implements ListView.OnI
         getTargetListener().onResult(getRequestCode(), resultCode, intent);
     }
 
-
-    protected String getLatLngString(double latitude, double longitude) {
-        return String.format("%f,%f", latitude, longitude);
-    }
-
     private class VisitAdapter extends ArrayAdapter<Visit> {
 
         public VisitAdapter(ArrayList<Visit> visits) {
@@ -156,8 +153,8 @@ public class VisitListFragment extends FragmentResponder implements ListView.OnI
 
             CircleImageView positionCircleImageView = (CircleImageView) convertView.findViewById(R.id.item_cstop_locationCircleImageView);
 
-            String firstMarker = getLatLngString(visit.getLatitudeStart(), visit.getLongitudeStart());
-            String lastMarker = getLatLngString(visit.getLatitudeEnd(), visit.getLongitudeEnd());
+            String firstMarker = StringUtils.getLatLngString(visit.getLatitudeStart(), visit.getLongitudeStart());
+            String lastMarker = StringUtils.getLatLngString(visit.getLatitudeEnd(), visit.getLongitudeEnd());
             StaticGoogleMaps googleMaps = StaticGoogleMaps.builder()
                     .addArgument("zoom", 15)
                     .addArgument("size", "200x200")

@@ -235,8 +235,6 @@ public class TripListFragment extends FragmentResponder implements ListView.OnIt
                     .addArgument("scale", 2)
                     .build();
 
-            Log.d(TAG, googleMaps.getUrl());
-
             Glide.with(getActivity()).load(googleMaps.getUrl()).crossFade().into(positionCircleImageView);
 
             return convertView;

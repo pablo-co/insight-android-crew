@@ -25,10 +25,7 @@
 
 package mx.itesm.logistics.crew_tracking.activity;
 
-import android.content.Intent;
-import android.content.SharedPreferences;
 import android.os.Bundle;
-import android.preference.PreferenceManager;
 import android.support.v4.app.Fragment;
 
 import org.apache.http.Header;
@@ -48,8 +45,7 @@ import edu.mit.lastmite.insight_library.util.Helper;
 import mx.itesm.logistics.crew_tracking.R;
 import mx.itesm.logistics.crew_tracking.fragment.CrewTrackFragment;
 import mx.itesm.logistics.crew_tracking.fragment.LoadingFragment;
-import mx.itesm.logistics.crew_tracking.model.VehicleType;
-import mx.itesm.logistics.crew_tracking.service.LocationManagerService;
+import edu.mit.lastmite.insight_library.model.VehicleType;
 import mx.itesm.logistics.crew_tracking.util.CrewAppComponent;
 import mx.itesm.logistics.crew_tracking.util.Lab;
 

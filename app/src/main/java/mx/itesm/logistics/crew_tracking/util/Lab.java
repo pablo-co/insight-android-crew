@@ -30,14 +30,12 @@ import android.util.Log;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Objects;
 
 import edu.mit.lastmite.insight_library.model.JSONSerializer;
-import edu.mit.lastmite.insight_library.model.JSONable;
 import edu.mit.lastmite.insight_library.model.Route;
 import edu.mit.lastmite.insight_library.model.User;
 import edu.mit.lastmite.insight_library.model.Vehicle;
-import mx.itesm.logistics.crew_tracking.model.VehicleType;
+import edu.mit.lastmite.insight_library.model.VehicleType;
 
 // TODO change serializers and objets to ArrayList and key extraction
 public class Lab {
