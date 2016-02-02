@@ -78,6 +78,7 @@ import edu.mit.lastmite.insight_library.util.ApplicationComponent;
 import edu.mit.lastmite.insight_library.util.ColorTransformation;
 import edu.mit.lastmite.insight_library.util.Storage;
 import edu.mit.lastmite.insight_library.util.TextSpeaker;
+import edu.mit.lastmite.insight_library.util.ViewUtils;
 import mx.itesm.logistics.crew_tracking.R;
 import mx.itesm.logistics.crew_tracking.activity.SettingsActivity;
 import mx.itesm.logistics.crew_tracking.activity.ShopListActivity;
@@ -879,12 +880,12 @@ public class CrewTrackFragment extends TrackFragment {
      */
 
     protected void updateActionButtonColors(int color) {
-        changeDrawableColor(R.mipmap.ic_stop, color, mStopButton);
-        changeDrawableColor(R.mipmap.ic_delivering, color, mDeliveringButton);
-        changeDrawableColor(R.mipmap.ic_package, color, mDeliveredButton);
-        changeDrawableColor(R.mipmap.ic_pedestrian, color, mReturningButton);
-        changeDrawableColor(R.mipmap.ic_package_down, color, mLoadingButton);
-        changeDrawableColor(R.mipmap.ic_truck, color, mBoardingButton);
+        ViewUtils.changeDrawableColor(getContext(), R.mipmap.ic_stop, color, mStopButton);
+        ViewUtils.changeDrawableColor(getContext(), R.mipmap.ic_delivering, color, mDeliveringButton);
+        ViewUtils.changeDrawableColor(getContext(), R.mipmap.ic_package, color, mDeliveredButton);
+        ViewUtils.changeDrawableColor(getContext(), R.mipmap.ic_pedestrian, color, mReturningButton);
+        ViewUtils.changeDrawableColor(getContext(), R.mipmap.ic_package_down, color, mLoadingButton);
+        ViewUtils.changeDrawableColor(getContext(), R.mipmap.ic_truck, color, mBoardingButton);
     }
 
 
