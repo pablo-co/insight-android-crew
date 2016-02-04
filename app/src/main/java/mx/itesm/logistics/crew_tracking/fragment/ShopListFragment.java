@@ -249,6 +249,9 @@ public class ShopListFragment extends FragmentResponder implements ListView.OnIt
         super.onStart();
         if (mShops.isEmpty()) {
             mShopsLoadingProgressView.setVisibility(View.GONE);
+        }
+
+        if (mNearby.isEmpty()) {
             mNearbyLoadingProgressView.setVisibility(View.VISIBLE);
         }
     }

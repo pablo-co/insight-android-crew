@@ -47,6 +47,8 @@
     <string name="action_stop">Stop</string>
     <string name="action_show_routes">Show routes</string>
     <string name="action_ok">Ok</string>
+    <string name="action_completed">Route completed</string>
+    <string name="action_delivery_done">Done with delivery</string>
 
     <!-- Tracking -->
     <string name="track_distance_placeholder">0.00 km</string>

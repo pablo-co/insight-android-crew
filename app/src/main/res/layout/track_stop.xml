@@ -12,7 +12,7 @@
         android:layout_height="wrap_content"
         android:layout_gravity="center_horizontal"
         android:layout_marginBottom="@dimen/label_margin"
-        android:text="@string/action_done"/>
+        android:text="@string/action_completed"/>
 
     <android.support.design.widget.FloatingActionButton
         android:id="@+id/track_stopButton"

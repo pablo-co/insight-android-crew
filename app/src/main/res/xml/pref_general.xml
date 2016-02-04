@@ -21,6 +21,12 @@
         android:title="@string/pref_title_gps_accelerometer"/>
 
     <SwitchPreference
+        android:defaultValue="false"
+        android:key="show_extra_kpi"
+        android:title="@string/pref_title_show_extra_kpi"
+        android:summary="@string/pref_summary_show_extra_kpi"/>
+
+    <SwitchPreference
         android:defaultValue="true"
         android:key="show_labels"
         android:title="@string/pref_title_show_labels"/>

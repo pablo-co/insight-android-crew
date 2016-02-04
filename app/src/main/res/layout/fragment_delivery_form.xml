@@ -53,30 +53,12 @@
         </android.support.design.widget.TextInputLayout>
 
         <com.rey.material.widget.CheckBox
-            android:id="@+id/delivery_equipmentUsedCheckBox"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_marginTop="32dp"
-            android:gravity="center"
-            android:text="Equipment used?"
-            android:textSize="18dp"/>
-
-        <com.rey.material.widget.CheckBox
-            android:id="@+id/delivery_beyondSegmentCheckBox"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_marginTop="32dp"
-            android:gravity="center"
-            android:text="Walked beyond segment?"
-            android:textSize="18dp"/>
-
-        <com.rey.material.widget.CheckBox
             android:id="@+id/delivery_servedCheckBox"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_marginTop="32dp"
             android:gravity="center"
-            android:text="Served?"
+            android:text="Unsuccesful delivery?"
             android:textSize="18dp"/>
 
         <com.dd.CircularProgressButton

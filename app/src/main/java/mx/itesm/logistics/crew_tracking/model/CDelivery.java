@@ -12,6 +12,7 @@ import edu.mit.lastmite.insight_library.model.Delivery;
 public class CDelivery extends Delivery {
     public static final String JSON_WRAPPER = "cdelivery";
     public static final String JSON_SERVED = "served";
+    public static final String JSON_TYPE = "type";
     public static final String JSON_START_TIME = "start_time";
     public static final String JSON_END_TIME = "end_time";
 
@@ -69,8 +70,6 @@ public class CDelivery extends Delivery {
         object.put(JSON_TIME, mTime);
         object.put(JSON_LATITUDE, mLatitude);
         object.put(JSON_LONGITUDE, mLongitude);
-        object.put(JSON_BEYOND_SEGMENT, mBeyondSegment);
-        object.put(JSON_EQUIPMENT, mEquipment);
         object.put(JSON_TYPE, mType);
         object.put(JSON_SERVED, mServed);
         object.put(JSON_START_TIME, mStartTime);

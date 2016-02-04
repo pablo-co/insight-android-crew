@@ -19,4 +19,5 @@ public abstract class Preferences {
     public static final String PREFERENCES_GPS_FREQUENCY = "gps_frequency";
     public static final String PREFERENCES_BASE_URL = "base_url";
     public static final String PREFERENCES_SHOW_LABELS = "show_labels";
+    public static final String PREFERENCES_EXTRA_KPIS = "show_extra_kpi";
 }

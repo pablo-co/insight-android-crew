@@ -281,6 +281,7 @@ public class CrewTrackFragment extends TrackFragment {
         populateModeSpinner();
         registerPaneListener();
         applyLabelsSettings();
+        applyKPISettings();
     }
 
     @Override
@@ -592,6 +593,12 @@ public class CrewTrackFragment extends TrackFragment {
             showLabels();
         } else {
             hideLabels();
+        }
+    }
+
+    protected void applyKPISettings() {
+        if (!mStorage.getSharedPreferences().getBoolean(Preferences.PREFERENCES_EXTRA_KPIS, false)) {
+            hideSpeedKPIs();
         }
     }
 

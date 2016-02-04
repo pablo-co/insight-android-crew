@@ -99,12 +99,6 @@ public class DeliveryFormFragment extends FragmentResponder implements Errorable
     @Bind(R.id.delivery_orderIdEditText)
     protected EditText mOrderIdEditText;
 
-    @Bind(R.id.delivery_beyondSegmentCheckBox)
-    protected CheckBox mBeyondSegmentCheckBox;
-
-    @Bind(R.id.delivery_equipmentUsedCheckBox)
-    protected CheckBox mEquipmentCheckBox;
-
     @Bind(R.id.delivery_servedCheckBox)
     protected CheckBox mServedCheckBox;
 
@@ -186,10 +180,8 @@ public class DeliveryFormFragment extends FragmentResponder implements Errorable
     }
 
     protected void updateDelivery() {
-        mDelivery.setEquipment(mEquipmentCheckBox.isChecked());
-        mDelivery.setBeyondSegment(mBeyondSegmentCheckBox.isChecked());
         mDelivery.setType(mTypeSpinner.getSelectedItemPosition() + 1);
-        mDelivery.setServed(mServedCheckBox.isChecked());
+        mDelivery.setServed(!mServedCheckBox.isChecked());
         mDelivery.measureTime();
         String orderId = mOrderIdEditText.getText().toString();
         if (!orderId.isEmpty()) {

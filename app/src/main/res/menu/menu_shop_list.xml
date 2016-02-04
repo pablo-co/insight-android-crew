@@ -3,7 +3,6 @@
       xmlns:app="http://schemas.android.com/apk/res-auto">
     <item
         android:id="@+id/shop_menu_item_close"
-        android:icon="@android:drawable/ic_menu_close_clear_cancel"
-        android:title="@string/action_back"
+        android:title="@string/action_delivery_done"
         app:showAsAction="always"/>
 </menu>
