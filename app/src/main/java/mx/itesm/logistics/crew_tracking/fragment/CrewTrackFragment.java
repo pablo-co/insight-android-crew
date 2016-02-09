@@ -64,6 +64,7 @@ import butterknife.Bind;
 import butterknife.ButterKnife;
 import butterknife.OnClick;
 import edu.mit.lastmite.insight_library.activity.SingleFragmentActivity;
+import edu.mit.lastmite.insight_library.event.ClearMapEvent;
 import edu.mit.lastmite.insight_library.event.TimerEvent;
 import edu.mit.lastmite.insight_library.fragment.TrackFragment;
 import edu.mit.lastmite.insight_library.http.APIFetch;
@@ -762,12 +763,15 @@ public class CrewTrackFragment extends TrackFragment {
     protected void runIdleActions() {
         goToState(TrackState.IDLE);
         resetStats();
+        resetMap();
         stopTracking();
         stopTimer();
     }
 
     protected void showIdleViews() {
         updatePanelShowingStatus();
+        mContentLayout.setAlpha(1.0f);
+        showPanel();
         hideAllViews();
         showIdleView();
         changeIdleViewForMode(mMode);
