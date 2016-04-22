@@ -77,6 +77,7 @@ import edu.mit.lastmite.insight_library.service.TimerService;
 import edu.mit.lastmite.insight_library.task.QueueHeaderTask;
 import edu.mit.lastmite.insight_library.util.ApplicationComponent;
 import edu.mit.lastmite.insight_library.util.ColorTransformation;
+import edu.mit.lastmite.insight_library.util.IntentUtils;
 import edu.mit.lastmite.insight_library.util.Storage;
 import edu.mit.lastmite.insight_library.util.TextSpeaker;
 import edu.mit.lastmite.insight_library.util.ViewUtils;
@@ -238,9 +239,6 @@ public class CrewTrackFragment extends TrackFragment {
 
     @Bind(R.id.track_modeSpinner)
     protected Spinner mModeSpinner;
-
-    @Bind(R.id.track_vehicleButton)
-    protected Button mVehicleButton;
 
     @Override
     public void injectFragment(ApplicationComponent component) {
@@ -423,8 +421,7 @@ public class CrewTrackFragment extends TrackFragment {
     @SuppressWarnings("UnusedDeclaration")
     @OnClick(R.id.track_vehicleButton)
     protected void onVehicleClicked() {
-        Intent intent = new Intent(getContext(), VehicleListActivity.class);
-        startActivityForResult(intent, REQUEST_VEHICLE);
+        IntentUtils.openActivityForResult(this, VehicleListActivity.class, REQUEST_VEHICLE);
     }
 
     @SuppressWarnings("UnusedDeclaration")
@@ -770,7 +767,6 @@ public class CrewTrackFragment extends TrackFragment {
 
     protected void showIdleViews() {
         updatePanelShowingStatus();
-        mContentLayout.setAlpha(1.0f);
         showPanel();
         hideAllViews();
         showIdleView();
@@ -958,6 +954,7 @@ public class CrewTrackFragment extends TrackFragment {
     public void updatePanelShowingStatus() {
         mIsShowingButtons = false;
         setFloatingButtonsSpace(0);
+        mContentLayout.setAlpha(1.0f);
         setPanelHeight(mHelper.dpToPx(PANEL_STATUS_HEIGHT));
     }
 
@@ -984,7 +981,6 @@ public class CrewTrackFragment extends TrackFragment {
         mStopLayout.setVisibility(View.GONE);
         mModeSpinner.setVisibility(View.GONE);
         mStatusLayout.setVisibility(View.GONE);
-        mVehicleButton.setVisibility(View.GONE);
         mReturningLayout.setVisibility(View.GONE);
         mLoadingLayout.setVisibility(View.GONE);
         mBoardingLayout.setVisibility(View.GONE);
